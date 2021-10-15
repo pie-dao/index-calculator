@@ -75,6 +75,7 @@ export default function IndexForm() {
                         name={`${name}.RATIO`}
                         component="input"
                         placeholder="Ratio"
+                        type="number"
                       />
                     </div>
                     {fields.length! > 1 && index !== 0 && (
@@ -124,7 +125,6 @@ export default function IndexForm() {
                 Reset
               </button>
             </div>
-            <pre>{JSON.stringify(values)}</pre>
           </form>
         )
       }}
