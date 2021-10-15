@@ -6,7 +6,7 @@ export default function Home() {
       <div className="text-center hero-content">
         <div className="card col-span-1 row-span-3 shadow-lg xl:col-span-2 bg-base-100">
           <div className="card-body">
-            <h2 className="my-4 text-4xl font-bold card-title">Index Calculator</h2>
+            <h2 className="mt-4 mb-7 text-4xl font-bold card-title">Index Calculator</h2>
             <IndexForm />
           </div>
         </div>
