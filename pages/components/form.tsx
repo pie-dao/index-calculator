@@ -4,7 +4,7 @@ import { IndexCalculator } from '../../src/classes/IndexCalculator'
 import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
 
-const onSubmit = async (values) => {
+const onSubmit = async (values: any) => {
   const { portfolio, computeWeights } = values
 
   const indexCalculator = new IndexCalculator(portfolio)
@@ -77,7 +77,7 @@ export default function IndexForm() {
                         placeholder="Ratio"
                       />
                     </div>
-                    {fields.length > 1 && index !== 0 && (
+                    {fields.length! > 1 && index !== 0 && (
                       <button onClick={() => fields.remove(index)} className="btn btn-square btn-ghost">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +124,7 @@ export default function IndexForm() {
                 Reset
               </button>
             </div>
-            <pre>{JSON.stringify(values, 0, 2)}</pre>
+            <pre>{JSON.stringify(values)}</pre>
           </form>
         )
       }}

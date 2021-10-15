@@ -1,3 +1,4 @@
+// @ts-nocheck
 import CoinGecko from 'coingecko-api'
 import { jStat } from 'jstat'
 
