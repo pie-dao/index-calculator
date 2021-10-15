@@ -14,8 +14,7 @@ const onSubmit = async (values: any) => {
     sentimentWeight: false,
     computeWeights: computeWeights,
   })
-  console.log('idx', portfolio)
-  console.log('idx', JSON.stringify(portfolio))
+  console.log('idx', JSON.stringify(indexCalculator.dataSet))
 }
 
 export default function IndexForm() {
@@ -79,7 +78,7 @@ export default function IndexForm() {
                       />
                     </div>
                     {fields.length! > 1 && index !== 0 && (
-                      <button onClick={() => fields.remove(index)} className="btn btn-square btn-ghost">
+                      <button type="button" onClick={() => fields.remove(index)} className="btn btn-square btn-ghost">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
