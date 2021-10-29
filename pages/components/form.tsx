@@ -17,7 +17,7 @@ const copyToClipboard = (str: string) => {
 };
 
 const onSubmit = async (values: any) => {
-  const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea } = values
+  const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea, sentimentWeight } = values
   let stop = false;
   let data;
   try {
@@ -28,7 +28,7 @@ const onSubmit = async (values: any) => {
   }
   
   if(stop) return;
-  const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : 1)
+  const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
   await indexCalculator.pullData(false, data)
   indexCalculator.computeAll({
     adjustedWeight: computeWeights,
@@ -37,7 +37,7 @@ const onSubmit = async (values: any) => {
   })
   const portfolioString = JSON.stringify(indexCalculator.dataSet);
   console.log('idx', portfolioString);
-  console.log('idx', indexCalculator.dataSet);
+  console.log('idx', indexCalculator);
   copyToClipboard(portfolioString);
   alert('Copied to clipboard.')
 }
@@ -153,7 +153,8 @@ export default function IndexForm() {
                   <label htmlFor="computeWeights" className="label">
                     <span className="label-text">Compute Weights</span>
                   </label>
-                </div><div className="form-control items-center flex-row">
+                </div>
+                <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1"
                     name="sentimentScore"
@@ -164,7 +165,21 @@ export default function IndexForm() {
                   <label htmlFor="sentimentScore" className="label">
                     <span className="label-text">Use Sentiment Score</span>
                   </label>
-                </div><div className="form-control items-center flex-row">
+                </div>
+                { values.sentimentScore ? 
+                <div className="form-control items-center flex-row">
+                  <Field
+                    className="checkbox my-3 mr-1"
+                    name="sentimentWeight"
+                    component="input"
+                    placeholder="1"
+                    id="sentimentWeight" />
+                  <label htmlFor="sentimentWeight" className="label">
+                    <span className="label-text">Sentiment Weights</span>
+                  </label>
+                </div>
+                : '' }
+                <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1"
                     name="useJson"
@@ -175,7 +190,8 @@ export default function IndexForm() {
                   <label htmlFor="sentimentScore" className="label">
                     <span className="label-text">Use Json</span>
                   </label>
-                </div><div className="form-control items-center flex-row">
+                </div>
+                <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1"
                     name="maxWeight"
@@ -185,7 +201,8 @@ export default function IndexForm() {
                   <label htmlFor="maxWeight" className="label">
                     <span className="label-text">Max Weights</span>
                   </label>
-                </div><div className="justify-end space-x-2 card-actions">
+                </div>
+                <div className="justify-end space-x-2 card-actions">
                   <button className="btn btn-primary" type="submit" disabled={submitting || pristine}>
                     Submit
                   </button>
