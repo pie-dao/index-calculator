@@ -3,6 +3,7 @@ import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
 import { IndexCalculator } from '../../src/classes/IndexCalculator'
+import Link from 'next/link'
 
 const copyToClipboard = (str: string) => {
   const el = document.createElement('textarea');
@@ -209,6 +210,11 @@ export default function IndexForm() {
                   <button className="btn btn-primary" type="button" onClick={form.reset} disabled={submitting || pristine}>
                     Reset
                   </button>
+                  <Link href="/dashboard">
+                    <button className="btn btn-primary" type="button">
+                      Next
+                    </button>
+                  </Link>                  
                 </div>
           </form>
         )

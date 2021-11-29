@@ -9,6 +9,9 @@
     "export": "next export"
   },
   "dependencies": {
+    "@nivo/core": "^0.74.0",
+    "@nivo/heatmap": "^0.74.0",
+    "@nivo/line": "^0.74.0",
     "daisyui": "^1.14.4",
     "final-form": "^4.20.4",
     "final-form-arrays": "^3.0.2",
