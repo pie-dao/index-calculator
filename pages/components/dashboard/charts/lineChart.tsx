@@ -1,5 +1,6 @@
 import React from 'react'
 import { LineProps, ResponsiveLine } from '@nivo/line'
+import { SliceTooltip } from './tooltips/lineTooltip'
 
 function lineChart({ data }: { data: LineProps['data'] }) {
   return (
@@ -7,10 +8,11 @@ function lineChart({ data }: { data: LineProps['data'] }) {
       data={data}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: 'point' }}
-      yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
+      yScale={{ type: 'linear', min: 'auto', max: 'auto', reverse: false }}
       yFormat=" >-.2f"
       axisTop={null}
-
+      enableSlices="x"
+      sliceTooltip={({slice}) => <SliceTooltip slice={slice}/>}
       axisRight={null}
       axisBottom={{
           tickSize: 5,

@@ -1,5 +1,19 @@
 import { HeatMapDatum } from "@nivo/heatmap";
 
+export const keys = [
+  "hot dog",
+  "burger",
+  "sandwich",
+  "kebab",
+  "fries",
+  "donut",
+  "junk",
+  "sushi",
+  "ramen",
+  "curry",
+  "udon",
+]
+
 export const data: HeatMapDatum[] = [
   {
     "country": "AD",

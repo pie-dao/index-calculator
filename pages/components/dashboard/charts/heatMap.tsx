@@ -1,24 +1,11 @@
 import React from 'react'
-import { ResponsiveHeatMap } from '@nivo/heatmap'
-import { data } from '../data/heatmapData'
-function heatMap(): JSX.Element {
+import { HeatMapDatum, ResponsiveHeatMap } from '@nivo/heatmap'
+function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], index: string }): JSX.Element {
   return (
     <ResponsiveHeatMap
         data={data}
-        keys={[
-            'hot dog',
-            'burger',
-            'sandwich',
-            'kebab',
-            'fries',
-            'donut',
-            'junk',
-            'sushi',
-            'ramen',
-            'curry',
-            'udon'
-        ]}
-        indexBy="country"
+        keys={keys}
+        indexBy={index}
         margin={{ top: 100, right: 60, bottom: 60, left: 60 }}
         forceSquare={true}
         padding={4}
@@ -30,14 +17,12 @@ function heatMap(): JSX.Element {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: 'country',
+            legend: index,
             legendPosition: 'middle',
             legendOffset: -40
         }}
         cellOpacity={1}
         cellBorderWidth={4}
-        cellBorderColor={{ from: 'color', modifiers: [ [ 'darker', 0.4 ] ] }}
-        labelTextColor={{ from: 'color', modifiers: [ [ 'darker', 1.8 ] ] }}
         animate={true}
         motionStiffness={80}
         motionDamping={9}

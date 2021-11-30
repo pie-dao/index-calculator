@@ -7,7 +7,8 @@ export const data: LineProps['data'] = [
     "data": [
       {
         "x": "09/11",
-        "y": 190
+        "y": 190,
+        "id": "09/11"
       },
       {
         "x": "10/11",

@@ -1,6 +1,7 @@
 import { DatumId, ResponsivePie } from '@nivo/pie'
+import { PieData } from '../../../../src/store/store'
 
-const MyResponsivePie = ({ data }: { data: DatumId[] }): JSX.Element => (
+const MyResponsivePie = ({ data }: { data: PieData[] }): JSX.Element => (
     <ResponsivePie
         data={data}
         margin={{ top: 40, right: 80, bottom: 80, left: 80 }}

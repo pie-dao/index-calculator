@@ -2,9 +2,9 @@ import React from 'react'
 import HeatMap from './components/dashboard/charts/heatMap'
 import LineChart from './components/dashboard/charts/lineChart'
 import PieChart from './components/dashboard/charts/PieChart'
-import { data } from './components/dashboard/data/lineData'
-import { data as pieData } from './components/dashboard/data/pieData'
 import Panel from './components/ui/panel'
+import store, { KPIs } from '../src/store/store'
+
 
 const TitleCard = (): JSX.Element => (
   <div className="hero h-1/8">
@@ -18,33 +18,27 @@ const TitleCard = (): JSX.Element => (
   </div>
 )
 
-const KPITable = (): JSX.Element => (
+const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
   <div className="overflow-x-auto">
     <table className="table w-full table-compact">
       <thead>
         <tr>
-          <th></th> 
-          <th>Name</th> 
-          <th>Job</th> 
-          <th>company</th> 
-          <th>location</th> 
-          <th>Last Login</th> 
-          <th>Favorite Color</th>
-          <th>New Row</th>
+          {
+            Object.keys(data[0]).map(k => (<th key={k}>{k}</th>))
+          }
         </tr>
       </thead> 
       <tbody>
-        { 
-          [1,2,3,4,5].map(i => (
-            <tr className="hover" key={i}>
-              <th>{i}</th> 
-              <td>Cy Ganderton</td> 
-              <td>Quality Control Specialist</td> 
-              <td>Littel, Schaden and Vandervort</td> 
-              <td>Canada</td> 
-              <td>12/16/2020</td> 
-              <td>Blue</td>
-              <td>Whatever</td>
+        {              
+          data.map(row => (
+            <tr className="hover" key={row.name}>
+              {
+                Object.values(row).map((item, idx) => (
+                  <th key={idx}>
+                    {item}
+                  </th>
+                ))
+              }
             </tr>
           ))
         }
@@ -56,46 +50,54 @@ const KPITable = (): JSX.Element => (
 const StatsTable = (): JSX.Element => (
   <div className="w-full shadow stats">
     <div className="stat place-items-center place-content-center">
-      <div className="stat-title">Downloads</div> 
-      <div className="stat-value">310M</div> 
-      <div className="stat-desc">Jan 1st - Feb 1st</div>
+      <div className="stat-title">Total Performance</div> 
+      <div className="stat-value text-success">↗︎ 14.7%</div> 
+      <div className="stat-desc">Last 30d</div>
     </div> 
     <div className="stat place-items-center place-content-center">
-      <div className="stat-title">New Users</div> 
-      <div className="stat-value text-success">4,200</div> 
-      <div className="stat-desc text-success">↗︎ 400 (22%)</div>
+      <div className="stat-title">Balance</div> 
+      <div className="stat-value text-success">$1.2M</div> 
     </div> 
     <div className="stat place-items-center place-content-center">
-      <div className="stat-title">New Registers</div> 
-      <div className="stat-value text-error">1,200</div> 
-      <div className="stat-desc text-error">↘︎ 90 (14%)</div>
+      <div className="stat-title">Variance</div> 
+      <div className="stat-value text-error">15%</div> 
+      <div className="stat-desc text-error">↘︎</div>
     </div>
   </div>
 )
 
 
 function dashboard() {
+  console.debug(store);
   return (
     <div className="h-screen overflow-auto">
       <TitleCard />
       <StatsTable />
       <Panel size="h-1/2 m-2" title="Portfolio Split Pie Chart">
-        <PieChart data={pieData as any}/>
+        <PieChart data={store.pies.ratio}/>
       </Panel>
       <Panel size="h-1/2 m-2" title="Backtesting Returns Line Chart">
-          <LineChart data={data} />
+          <LineChart data={store.lines.returns} />
       </Panel>
       <Panel size="h-1/2 m-2" title="Performance Line Chart">
-          <LineChart data={data} />
+          <LineChart data={store.lines.performance} />
       </Panel>      
-      <Panel size="h-1/2 m-2" title="Portfolio Correlation Heatmap">
-          <HeatMap />
+      <Panel size="h-1/2 m-2" title="Portfolio Covariance Heatmap">
+          <HeatMap
+            data={store.heatmaps.correlation.data}
+            keys={store.heatmaps.correlation.keys}
+            index={store.heatmaps.correlation.index}
+          />
       </Panel>
       <Panel size="h-1/2 m-2" title="Portfolio Covariance Heatmap">
-          <HeatMap />
+          <HeatMap
+            data={store.heatmaps.covariance.data}
+            keys={store.heatmaps.covariance.keys}
+            index={store.heatmaps.covariance.index}
+          />
       </Panel>
       <Panel size="h-1/2 m-2" title="KPI Table">
-          <KPITable />
+          <KPITable data={store.tables.kpi} />
       </Panel>
     </div>
   )
