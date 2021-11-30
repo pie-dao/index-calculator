@@ -109,7 +109,8 @@ type Store = {
 
 type SerieGetter = (item: IndexCalculatorOutput) => Datum[];
 
-const performanceGetter: SerieGetter = item => item.performance.map(i => ({ x: i[0], y: i[1] }));
+
+const performanceGetter: SerieGetter = item => item.performance.map(i => ({ x: new Date(i[0]).toISOString().slice(0, 10), y: i[1] }));
 const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({ x: index, y: r }));
 const priceGetter: SerieGetter = item => item.data.prices.map(p => ({ x: p[0], y: p[1] }));
 
@@ -126,26 +127,34 @@ const getHeatMapData = (
   variant: keyof Omit<Backtesting, "returns">
 ): HeatMapDatum[] => data.map(item => ({
     [index]: item.name,
-    ...item.backtesting[variant]
+    ...dynamicDataToDecimalPlaces(item.backtesting[variant], 2)
   })
 );
 
+const dynamicDataToDecimalPlaces = (item: Correlation, decimals: number): HeatMapDatum => {
+  const entries = Object.entries(item)
+
+  const entriesDecimalAdjusted = entries.map(([key, value]: [string, number]) => ({
+      [key]: value.toPrecision(decimals)
+    })
+  )
+  return Object.assign({}, ...entriesDecimalAdjusted )
+}
 
 const getHeatmapKeys = (data: IndexCalculatorOutput[]): string[] => {
   return Object.keys(data[0].backtesting.covariance)
 };
 
-const getPieData = (data: IndexCalculatorOutput[]): PieData[] => data.map(item => (
-  {
+const getPieData = (data: IndexCalculatorOutput[]): PieData[] => data.map(item => ({
     id: item.name,
     label: item.name,
     value: item.RATIO
-  }
-));
+  })
+);
 
 const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
   const { backtesting, data, performance, ...kpis } = item;
-  return kpis 
+  return kpis
 })
 
 

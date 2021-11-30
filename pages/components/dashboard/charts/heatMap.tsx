@@ -6,7 +6,6 @@ function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], 
         data={data}
         keys={keys}
         indexBy={index}
-        margin={{ top: 100, right: 60, bottom: 60, left: 60 }}
         forceSquare={true}
         padding={4}
         colors="PuRd"
