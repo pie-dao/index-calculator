@@ -4,6 +4,8 @@ import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
 import { IndexCalculator } from '../../src/classes/IndexCalculator'
 import Link from 'next/link'
+import { convertToStoreData, StoreContext } from '../../src/store/store'
+import { useContext } from 'react'
 
 const copyToClipboard = (str: string) => {
   const el = document.createElement('textarea');
@@ -17,35 +19,41 @@ const copyToClipboard = (str: string) => {
   document.body.removeChild(el);
 };
 
-const onSubmit = async (values: any) => {
-  const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea, sentimentWeight } = values
-  let stop = false;
-  let data;
-  try {
-    data = useJson ? JSON.parse(textarea) : portfolio;
-  } catch (e) {
-    stop = true;
-    alert('Json is not valid, use a validator')
-  }
-  
-  if(stop) return;
-  const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
-  await indexCalculator.pullData(false, data)
-  indexCalculator.computeAll({
-    adjustedWeight: computeWeights,
-    sentimentWeight: sentimentScore,
-    computeWeights: computeWeights,
-  })
-  const portfolioString = JSON.stringify(indexCalculator.dataSet);
-  console.log('idx', portfolioString);
-  console.log('idx', indexCalculator);
-  copyToClipboard(portfolioString);
-  alert('Copied to clipboard.')
-}
+
 
 export default function IndexForm() {
   const initialFormState = { portfolio: [{}], computeWeights: true,  sentimentScore: false, useJson: false}
+  const { setStore } = useContext(StoreContext);
 
+  const onSubmit = async (values: any) => {
+    const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea, sentimentWeight } = values
+    let stop = false;
+    let data;
+    try {
+      data = useJson ? JSON.parse(textarea) : portfolio;
+    } catch (e) {
+      stop = true;
+      alert('Json is not valid, use a validator')
+    }
+    
+    if(stop) return;
+    const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
+    await indexCalculator.pullData(false, data)
+    indexCalculator.computeAll({
+      adjustedWeight: computeWeights,
+      sentimentWeight: sentimentScore,
+      computeWeights: computeWeights,
+    })
+    const portfolioString = JSON.stringify(indexCalculator.dataSet);
+    console.log('idx', portfolioString);
+    console.log('idx', indexCalculator);
+    copyToClipboard(portfolioString);
+    alert('Copied to clipboard.')
+
+    const newStoreData = convertToStoreData(indexCalculator.dataSet);
+    console.debug({ newStoreData });
+    (newStoreData && setStore) && setStore(newStoreData)
+  }
   return (
     <Form
       onSubmit={onSubmit}

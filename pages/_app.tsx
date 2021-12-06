@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import LoadingSpinner from './components/ui/loadingSpinner';
+import StoreContextProvider from '../src/store/store';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -13,10 +14,12 @@ function MyApp({ Component, pageProps }: AppProps) {
     router.events.on("routeChangeComplete", () => setTimeout(() => setLoading(false), 250));
   }, [router.events])
   
-  return <>{
-    loading
-      ? <LoadingSpinner />
-      : <Component {...pageProps} />
-    }</>
+  return <StoreContextProvider>
+    {
+      loading
+        ? <LoadingSpinner />
+        : <Component {...pageProps} />
+    }
+    </StoreContextProvider>
 }
 export default MyApp

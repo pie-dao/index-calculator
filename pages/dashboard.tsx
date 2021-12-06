@@ -1,9 +1,11 @@
 import React from 'react'
-import HeatMap from './components/dashboard/charts/heatMap'
-import LineChart from './components/dashboard/charts/lineChart'
+import HeatMap from './components/dashboard/charts/HeatMap'
+import LineChart from './components/dashboard/charts/LineChart'
 import PieChart from './components/dashboard/charts/PieChart'
 import Panel from './components/ui/panel'
-import store, { KPIs } from '../src/store/store'
+import { KPIs, StoreContext } from '../src/store/store'
+import BigNumber from 'bignumber.js'
+import BarChart from './components/dashboard/charts/BarChart'
 
 
 const TitleCard = (): JSX.Element => (
@@ -17,6 +19,10 @@ const TitleCard = (): JSX.Element => (
     </div>
   </div>
 )
+
+const handleBigNumber = (b: BigNumber | number | string): string | number => {
+  return (b instanceof BigNumber) ? b.toString() : b; 
+}
 
 const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
   <div className="overflow-x-auto">
@@ -35,7 +41,7 @@ const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
               {
                 Object.values(row).map((item, idx) => (
                   <th key={idx}>
-                    {item}
+                    {handleBigNumber(item)}
                   </th>
                 ))
               }
@@ -68,11 +74,12 @@ const StatsTable = (): JSX.Element => (
 
 
 function dashboard() {
-  console.debug(store);
+  const { store } = React.useContext(StoreContext);
+  console.debug({ store });
   return (
     <div className="h-screen overflow-auto">
       <TitleCard />
-      <StatsTable />
+      {/* <StatsTable /> */}
       <Panel size="h-1/2 m-2" title="Portfolio Split Pie Chart">
         <PieChart data={store.pies.ratio}/>
       </Panel>
@@ -81,7 +88,7 @@ function dashboard() {
       </Panel>
       <Panel size="h-1/2 m-2" title="Performance Line Chart">
           <LineChart data={store.lines.performance} />
-      </Panel>      
+      </Panel>
       <Panel size="h-1/2 m-2" title="Portfolio Covariance Heatmap">
           <HeatMap
             data={store.heatmaps.correlation.data}
@@ -99,6 +106,13 @@ function dashboard() {
       <Panel size="h-1/2 m-2" title="KPI Table">
           <KPITable data={store.tables.kpi} />
       </Panel>
+      {
+        Object.entries(store.bars).map(([kpi, data]) => (
+          <Panel size="h-1/2 m-2" title={kpi} key={kpi}>
+            <BarChart data={data.data} keys={data.keys} index={data.index} />
+          </Panel>    
+        ))
+      }
     </div>
   )
 }

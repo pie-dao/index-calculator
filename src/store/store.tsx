@@ -1,35 +1,8 @@
-
-/**
- * Store needs:
- * list of assets (name, coingeckoid)
- * 
- * >> utility, lineData
- * - Backtesting returns: day, returnpercentage
- * - Price chart: day, price
- * - Performance chart: day, performance
- * 
- * 
- * 
- * 
- * 
- * - Summary stats:
- * totals:
- * - Across all selected assets:
- *  - Average weighted performance
- *  - Average weighted returns
- * 
- * - JOIN each asset to the next into covariance table, fmt:
- *  AssetX: TICKET
- *  Asset[Y-N]: number
- * 
- * - for each asset, fetch the summary stats
- * - for each asset, fetch the adjustedratio
- * 
- */
-
 import { HeatMapDatum } from '@nivo/heatmap';
 import { Datum, Serie } from '@nivo/line';
-import data from './sample.json';
+import sampleData from './sample.json';
+import React, { useState } from 'react';
+import { BarDatum, BarItem } from '@nivo/bar';
 
 export interface KPIs {
   name:                    string;
@@ -104,7 +77,18 @@ type Store = {
   };
   tables: {
     kpi: KPIs[]
-  }
+  },
+  bars: BarsData
+}
+
+type BarProps = {
+  data: BarDatum[];
+  index: string;
+  keys: string[];
+}
+
+type BarsData = {
+  [K in keyof KPIs]?: BarProps;
 }
 
 type SerieGetter = (item: IndexCalculatorOutput) => Datum[];
@@ -158,7 +142,36 @@ const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
 })
 
 
-const store: Store = {
+const getKeys = (data: IndexCalculatorOutput[]): string[] => data.map(item => item.name);
+
+const getBarDatum = (data: IndexCalculatorOutput[], KPI: keyof KPIs): BarDatum => data.reduce((prev, curr) => {
+  const record = { [curr.name]: curr[KPI] };
+  return { ...prev,  ...record };
+}, {})
+
+const getBarDataForKPI = (data: IndexCalculatorOutput[], kpi: keyof KPIs): BarProps => {
+  const keys = getKeys(data);
+  const barDatum = getBarDatum(data, kpi);
+  return {
+    data: [barDatum],
+    index: kpi,
+    keys
+  }
+}
+
+const getBarData = (data: IndexCalculatorOutput[]): BarsData => {
+  const kpis = getKpis(data)[0];
+  const excluded = ['coingeckoId', 'name', 'ADJUSTED', 'adjustedMarketCAP', 'addedRatio'];
+  const barDataArray = Object.keys(kpis)
+    .filter(kpi => !excluded.includes(kpi))  
+    .map((kpi: string) => ({
+      [kpi]: getBarDataForKPI(data, kpi as keyof KPIs)
+    })
+  );
+  return Object.assign({}, ...barDataArray);
+}
+
+export const convertToStoreData = (data: IndexCalculatorOutput[]): Store => ({
   lines: {
     performance: getLineData(data, performanceGetter),
     returns: getLineData(data, returnGetter),
@@ -181,9 +194,29 @@ const store: Store = {
   },
   tables: {
     kpi: getKpis(data)
-  }
+  },
+  bars: getBarData(data)
+})
 
+type StoreType = {
+  store: Store;
+  setStore?: (store: Store) => void
 }
 
+export const StoreContext = React.createContext<StoreType>({
+  store: convertToStoreData(sampleData),
+});
 
-export default store
+export const StoreContextProvider = (props: { children: React.ReactNode }): JSX.Element => {
+  const [store, setStore] = useState(convertToStoreData(sampleData))
+  return (
+    <StoreContext.Provider value={{
+        store,
+        setStore,
+      }}>
+      { props.children }
+    </StoreContext.Provider>
+  )
+}
+
+export default StoreContextProvider
