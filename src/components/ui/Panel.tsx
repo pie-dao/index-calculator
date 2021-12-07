@@ -9,7 +9,7 @@ interface PanelProps {
 function Panel(props: PanelProps): JSX.Element {
   const className = `card bordered ${props.size ?? 'h-96' }`;
   return (
-    <div className={className}>
+    <div className={className} style={{ minHeight: "600px" }}>
       <div className="card-body">
         <h2 className="card-title">{ props.title }</h2>       
         { props.children }

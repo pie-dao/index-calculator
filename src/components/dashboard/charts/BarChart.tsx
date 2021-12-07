@@ -30,7 +30,7 @@ const BarChart = ({ data, keys, index }: BarChartProps) => (
         theme={customTheme}
         tooltip={({ id, value }) => <BarTooltip id={id} value={value}/>}
         colors={{ scheme: colorScheme }}
-        margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+        margin={{ top: 50, right: 120, bottom: 50, left: 10 }}
         padding={0.3}
         layout="horizontal"
         groupMode="grouped"
@@ -46,7 +46,7 @@ const BarChart = ({ data, keys, index }: BarChartProps) => (
             tickRotation: 0,
             legend: index,
             legendPosition: 'middle',
-            legendOffset: 32,
+            legendOffset: 40,
             format: v => formatLargeInteger(v)
         }}
         enableGridY={false}
