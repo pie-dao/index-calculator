@@ -1,4 +1,4 @@
-export const TitleCard = (): JSX.Element => (
+const TitleCard = (): JSX.Element => (
   <div className="hero h-1/8">
     <div className="text-center hero-content w-full">
       <div className="max-w">
@@ -9,3 +9,5 @@ export const TitleCard = (): JSX.Element => (
     </div>
   </div>
 )
+
+export default TitleCard

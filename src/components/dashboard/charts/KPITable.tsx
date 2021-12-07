@@ -1,7 +1,7 @@
-import { KPIs } from "../../../../src/types/indexCalculator";
-import { largeNumberHandler } from "../../../../src/utils/numberPrecision";
+import { KPIs } from "../../../types/indexCalculator";
+import { largeNumberHandler } from "../../../utils/numberPrecision";
 
-export const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
+const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
   <div className="overflow-x-auto">
     <table className="table w-full table-compact">
       <thead>
@@ -29,3 +29,5 @@ export const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
     </table>
   </div>
 )
+
+export default KPITable

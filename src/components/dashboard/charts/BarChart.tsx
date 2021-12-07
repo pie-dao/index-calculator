@@ -1,9 +1,26 @@
 import { BarDatum, ResponsiveBar } from '@nivo/bar'
-import { formatLargeInteger } from '../../../../src/utils/numberPrecision'
-import { colorScheme, customTheme } from './theme'
-import { BarTooltip } from './tooltips'
+import { formatLargeInteger } from '../../../utils/numberPrecision'
+import { colorScheme, customTheme } from '../../../utils/theme'
+import Tooltip from './tooltips'
 
-export type BarChartProps = { data: BarDatum[], keys: string[], index: string }
+type BarTooltipProps = {
+    id: string | number;
+    value: number;
+};
+  
+const BarTooltip = ({ id, value }: BarTooltipProps): JSX.Element => (
+    <Tooltip title={''}>
+      <strong style={{ color: 'black' }}>
+          {id}: {formatLargeInteger(value)}
+      </strong>
+    </Tooltip>
+);
+  
+export type BarChartProps = {
+    data: BarDatum[],
+    keys: string[],
+    index: string
+};
 
 const BarChart = ({ data, keys, index }: BarChartProps) => (
     <ResponsiveBar

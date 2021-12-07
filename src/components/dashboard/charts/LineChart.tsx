@@ -1,7 +1,37 @@
 import React from 'react'
-import { LineProps, ResponsiveLine } from '@nivo/line'
-import { SliceTooltip } from './tooltips'
-import { customTheme } from './theme'
+import { LineProps, Point, ResponsiveLine } from '@nivo/line'
+import Tooltip from './tooltips'
+import { customTheme } from '../../../utils/theme'
+import { DatumValue } from '@nivo/core';
+
+type SliceProps = { 
+    slice: { 
+      id: DatumValue;
+      height: number;
+      width: number;
+      x0: number;
+      x: number;
+      y0: number;
+      y: number;
+      points: Point[];
+    }
+  };
+
+const SliceTooltip = ({ slice }: SliceProps): JSX.Element => (
+    <Tooltip title={''}>
+        {slice.points.map(point => (
+        <div
+            key={point.id}
+            style={{
+                color: "#000",
+                padding: '3px 0',
+            }}
+        >
+            <strong>{point.serieId}</strong> {point.data.yFormatted}
+        </div>
+        ))}
+    </Tooltip>
+)
 
 function lineChart({ data, index }: { data: LineProps['data'], index: string }) {
   return (

@@ -1,5 +1,5 @@
 import { Datum, Serie } from "@nivo/line";
-import { colorSchemeIndex } from "../../pages/components/dashboard/charts/theme";
+import { colorSchemeIndex } from "./theme";
 import { IndexCalculatorOutput } from "../types/indexCalculator";
 import { Performance, SerieGetter } from "../types/store";
 

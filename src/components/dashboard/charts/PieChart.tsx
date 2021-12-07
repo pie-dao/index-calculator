@@ -1,7 +1,16 @@
-import { ResponsivePie } from '@nivo/pie'
-import { PieData } from '../../../../src/types/store'
-import { colorScheme, customTheme } from './theme'
-import { PieToolTip } from './tooltips'
+import { PieTooltipProps, ResponsivePie } from '@nivo/pie'
+import { PieData } from '../../../types/store'
+import { colorScheme, customTheme } from '../../../utils/theme'
+import Tooltip from './tooltips'
+
+export const PieToolTip = (props: PieTooltipProps<PieData>): JSX.Element => (
+    <Tooltip title={''}>
+        <div style={{ color: 'black' }}>
+          { props.datum.label } : { props.datum.value }
+        </div>
+    </Tooltip>
+);
+  
 
 const MyResponsivePie = ({ data }: { data: PieData[] }): JSX.Element => (
     <ResponsivePie

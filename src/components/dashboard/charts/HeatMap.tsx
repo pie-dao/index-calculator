@@ -1,7 +1,22 @@
 import React from 'react'
 import { HeatMapDatum, ResponsiveHeatMap } from '@nivo/heatmap'
-import { customTheme } from './theme'
-import { HeatmapToolTip } from './tooltips'
+import { customTheme } from '../../../utils/theme'
+import Tooltip from './tooltips'
+
+type HeatmapTooltipProps = {
+  xKey: string,
+  yKey: string,
+  value: string
+};
+
+export const HeatmapToolTip = (props: HeatmapTooltipProps): JSX.Element => (
+  <Tooltip title={''}>
+    <strong style={{ color: 'black' }}>
+      {props.xKey} / {props.yKey}: {props.value}
+    </strong>
+  </Tooltip>
+);
+
 function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], index: string }): JSX.Element {
   return (
     <ResponsiveHeatMap

@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
-import LoadingSpinner from './components/ui/LoadingSpinner';
+import LoadingSpinner from '../src/components/ui/LoadingSpinner';
 import StoreContextProvider from '../src/context/StoreContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
