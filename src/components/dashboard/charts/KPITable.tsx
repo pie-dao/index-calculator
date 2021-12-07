@@ -1,5 +1,5 @@
-import { KPIs } from "../../../../src/types/indexCalculator";
-import { largeNumberHandler } from "../../../../src/utils/numberPrecision";
+import { KPIs } from "../../../types/indexCalculator";
+import { largeNumberHandler } from "../../../utils/numberPrecision";
 
 const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
   <div className="overflow-x-auto">

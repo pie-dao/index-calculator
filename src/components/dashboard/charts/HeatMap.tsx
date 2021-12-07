@@ -1,6 +1,6 @@
 import React from 'react'
 import { HeatMapDatum, ResponsiveHeatMap } from '@nivo/heatmap'
-import { customTheme } from '../../../../src/utils/theme'
+import { customTheme } from '../../../utils/theme'
 import Tooltip from './tooltips'
 
 type HeatmapTooltipProps = {

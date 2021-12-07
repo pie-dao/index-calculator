@@ -1,4 +1,4 @@
-import IndexForm from './components/form'
+import IndexForm from '../src/components/form'
 
 export default function Home() {
   return (

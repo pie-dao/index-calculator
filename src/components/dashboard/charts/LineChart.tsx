@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineProps, Point, ResponsiveLine } from '@nivo/line'
 import Tooltip from './tooltips'
-import { customTheme } from '../../../../src/utils/theme'
+import { customTheme } from '../../../utils/theme'
 import { DatumValue } from '@nivo/core';
 
 type SliceProps = { 

@@ -2,8 +2,8 @@
 import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
-import { IndexCalculator } from '../../src/classes/IndexCalculator'
-import { convertToStoreData, StoreContext } from '../../src/context/StoreContext'
+import { IndexCalculator } from '../classes/IndexCalculator'
+import { convertToStoreData, StoreContext } from '../context/StoreContext'
 import { useContext } from 'react'
 import { useRouter } from 'next/router'
 
