@@ -60,7 +60,7 @@ export const SliceTooltip = ({ slice }: SliceProps): JSX.Element => (
             padding: '3px 0',
         }}
       >
-        <strong>{point.serieId}</strong> [{point.data.yFormatted}]
+        <strong>{point.serieId}</strong> {point.data.yFormatted}
       </div>
     ))}
   </Tooltip>

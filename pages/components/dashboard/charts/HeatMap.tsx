@@ -22,11 +22,12 @@ function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], 
             tickRotation: 0,
             legend: index.toUpperCase(),
             legendPosition: 'middle',
-            legendOffset: -45
+            legendOffset: -50
         }}
         cellOpacity={1}
         cellBorderWidth={4}
         animate={true}
+        labelTextColor='black'
         motionStiffness={80}
         motionDamping={9}
         hoverTarget="cell"

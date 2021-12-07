@@ -100,16 +100,13 @@ function dashboard() {
     <div className="h-screen overflow-auto">
       <TitleCard />
       {/* <StatsTable /> */}
-      <Panel size="h-1/2 m-2" title="Portfolio Split Pie Chart">
-        <PieChart data={store.pies.ratio}/>
-      </Panel>
       <Panel size="h-1/2 m-2" title="Backtesting Returns Line Chart">
           <LineChart data={store.lines.returns} index='% Change' />
       </Panel>
       <Panel size="h-1/2 m-2" title="Performance Line Chart">
           <LineChart data={store.lines.performance} index='% Change' />
       </Panel>
-      <Panel size="h-1/2 m-2" title="Portfolio Covariance Heatmap">
+      <Panel size="h-1/2 m-2" title="Portfolio Correlation Heatmap">
           <HeatMap
             data={store.heatmaps.correlation.data}
             keys={store.heatmaps.correlation.keys}
@@ -125,6 +122,9 @@ function dashboard() {
       </Panel>
       <Panel size="h-1/2 m-2" title="KPI Table">
           <KPITable data={store.tables.kpi} />
+      </Panel>
+      <Panel size="h-1/2 m-2" title="Portfolio Split Pie Chart">
+        <PieChart data={store.pies.ratio}/>
       </Panel>
       {
         Object.entries(store.bars).map(([kpi, data]) => (

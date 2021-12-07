@@ -1,8 +1,10 @@
 import { HeatMapDatum } from '@nivo/heatmap';
 import { Datum, Serie } from '@nivo/line';
 import sampleData from './sample.json';
+import samplePerformance from './samplePerformance.json';
 import React, { useState } from 'react';
-import { BarDatum, BarItem } from '@nivo/bar';
+import { BarDatum } from '@nivo/bar';
+import { colorSchemeIndex } from '../../pages/components/dashboard/charts/theme';
 
 export interface KPIs {
   name:                    string;
@@ -93,6 +95,10 @@ type BarsData = {
 
 type SerieGetter = (item: IndexCalculatorOutput) => Datum[];
 
+type DailyFigure = [number, number];
+type NAV = Array<DailyFigure>;
+type Performance = Array<DailyFigure>;
+
 const adjustPrecisionSwitch = (n: number): number | string => {
   switch (true) {
     case n > 10_000:
@@ -116,23 +122,37 @@ const adjustPrecisionSwitch = (n: number): number | string => {
   }
 };
 
-
-const performanceGetter: SerieGetter = item => item.performance.map(i => ({
-  x: new Date(i[0]).toISOString().slice(0, 10),
+const toSerie = (i: [number, number]): Datum => ({
+  x: new Date(Math.floor(i[0])).toISOString().slice(0, 10),
   y: i[1]
-}));
+})
+
+const performanceGetter: SerieGetter = item => item.performance.map(i => toSerie(i as [number, number]));
 const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({
   x: index,
   y: r
 }));
+
 const priceGetter: SerieGetter = item => item.data.prices.map(p => ({ x: p[0], y: p[1] }));
 
+const handleOverflow = (idx: number, array: unknown[]) => idx < array.length ? array[idx] : array[idx % array.length];
+
 const getLineData = (data: IndexCalculatorOutput[], getter: SerieGetter): Serie[] => {
-  return data.map(item => ({
+  return data.map((item, idx) => ({
     id: item.name,
+    color: handleOverflow(idx, colorSchemeIndex),
     data: getter(item)
   }))
 };
+
+const addPerformanceToLineData = (data: Serie[], performance: Performance): Serie[] => {
+  const total: Serie = {
+    id: 'OVERALL',
+    color: 'green',
+    data: performance.map(i => toSerie(i))
+  };
+  return [...data, total];
+}
 
 const getHeatMapData = (
   data: IndexCalculatorOutput[],
@@ -202,7 +222,7 @@ const getBarDataForKPI = (data: IndexCalculatorOutput[], kpi: keyof KPIs): BarPr
 
 const getBarData = (data: IndexCalculatorOutput[]): BarsData => {
   const kpis = getKpis(data)[0];
-  const excluded = [
+  const excluded: Array<keyof KPIs> = [
     'coingeckoId',
     'name',
     'ADJUSTED',
@@ -210,10 +230,13 @@ const getBarData = (data: IndexCalculatorOutput[]): BarsData => {
     'addedRatio',
     'CAPPED',
     'initialAmounts',
-    'RATIO'
+    'RATIO',
+    'MIN_MCAP',
+    'MAX_MCAP',
+    'AVG_MCAP',
   ];
   const barDataArray = Object.keys(kpis)
-    .filter(kpi => !excluded.includes(kpi))  
+    .filter(kpi => !excluded.includes(kpi as keyof KPIs))  
     .map((kpi: string) => ({
       [kpi]: getBarDataForKPI(data, kpi as keyof KPIs)
     })
@@ -221,9 +244,9 @@ const getBarData = (data: IndexCalculatorOutput[]): BarsData => {
   return Object.assign({}, ...barDataArray);
 }
 
-export const convertToStoreData = (data: IndexCalculatorOutput[]): Store => ({
+export const convertToStoreData = (data: IndexCalculatorOutput[], performance: Performance): Store => ({
   lines: {
-    performance: getLineData(data, performanceGetter),
+    performance: addPerformanceToLineData(getLineData(data, performanceGetter), performance),
     returns: getLineData(data, returnGetter),
     price: getLineData(data, priceGetter),
   },
@@ -254,11 +277,11 @@ type StoreType = {
 }
 
 export const StoreContext = React.createContext<StoreType>({
-  store: convertToStoreData(sampleData),
+  store: convertToStoreData(sampleData, samplePerformance.performance as Array<[number, number]>),
 });
 
 export const StoreContextProvider = (props: { children: React.ReactNode }): JSX.Element => {
-  const [store, setStore] = useState(convertToStoreData(sampleData))
+  const [store, setStore] = useState(convertToStoreData(sampleData, samplePerformance.performance as Array<[number, number]>))
   return (
     <StoreContext.Provider value={{
         store,

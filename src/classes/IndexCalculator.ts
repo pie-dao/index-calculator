@@ -342,11 +342,10 @@ export class IndexCalculator {
           continue
         }
 
-        const timestampYesterday = el.data.prices[i - 1][0]
         const priceYesterday = el.data.prices[0][1]
         const performance = (price - priceYesterday) / priceYesterday
 
-        el.performance.push([timestampYesterday, performance])
+        el.performance.push([timestamp, performance])
       }
     }
 

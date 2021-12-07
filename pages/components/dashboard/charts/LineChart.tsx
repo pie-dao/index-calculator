@@ -7,11 +7,11 @@ function lineChart({ data, index }: { data: LineProps['data'], index: string }) 
   return (
     <ResponsiveLine
       data={data}
-      colors={{ scheme: colorScheme }}
-      margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+      colors={{ datum: 'color' }}
+      margin={{ top: 50, right: 110, bottom: 70, left: 60 }}
       xScale={{ type: 'point' }}
       yScale={{ type: 'linear', min: 'auto', max: 'auto', reverse: false }}
-      yFormat=" >-.2f"
+      yFormat=" >-.2%"
       sliceTooltip={({slice}) => <SliceTooltip slice={slice}/>}
       axisTop={null}
       theme={customTheme}
@@ -22,7 +22,7 @@ function lineChart({ data, index }: { data: LineProps['data'], index: string }) 
           tickPadding: 5,
           tickRotation: 45,
           legend: 'Date',
-          legendOffset: 36,
+          legendOffset: 60,
           legendPosition: 'middle'
       }}
       axisLeft={{
@@ -30,10 +30,10 @@ function lineChart({ data, index }: { data: LineProps['data'], index: string }) 
           tickPadding: 5,
           tickRotation: 0,
           legend: index,
-          legendOffset: -45,
+          legendOffset: -50,
           legendPosition: 'middle'
       }}
-      pointSize={10}
+      pointSize={8}
       enableGridX={false}
       enableGridY={false}
       pointBorderColor={{ from: 'serieColor' }}
