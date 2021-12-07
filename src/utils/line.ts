@@ -3,9 +3,16 @@ import { colorSchemeIndex } from "./theme";
 import { IndexCalculatorOutput } from "../types/indexCalculator";
 import { Performance, SerieGetter } from "../types/store";
 
+const monthDayTime = (d: Date): string => {
+  const [date, time] = d.toISOString().split('T');
+  const datePart = date.slice(5, 10);
+  const timePart = time.slice(0, 5);
+  return `${datePart} ${timePart}`
+}
+
 // Pretty formats the date and maps to x, y coordinates
 export const toSerie = (i: [number, number]): Datum => ({
-  x: new Date(Math.floor(i[0])).toISOString().slice(0, 10),
+  x: monthDayTime(new Date(i[0])),
   y: i[1]
 })
 

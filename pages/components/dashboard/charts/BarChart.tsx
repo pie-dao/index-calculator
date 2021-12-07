@@ -1,6 +1,6 @@
 import { BarDatum, ResponsiveBar } from '@nivo/bar'
-import { formatLargeInteger } from '../../../utils/numberPrecision'
-import { colorScheme, customTheme } from '../../../utils/theme'
+import { formatLargeInteger } from '../../../../src/utils/numberPrecision'
+import { colorScheme, customTheme } from '../../../../src/utils/theme'
 import Tooltip from './tooltips'
 
 type BarTooltipProps = {
