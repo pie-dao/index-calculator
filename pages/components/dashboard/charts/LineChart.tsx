@@ -1,18 +1,21 @@
 import React from 'react'
 import { LineProps, ResponsiveLine } from '@nivo/line'
-import { SliceTooltip } from './tooltips/lineTooltip'
+import { SliceTooltip } from './tooltips'
+import { colorScheme, customTheme } from './theme'
 
-function lineChart({ data }: { data: LineProps['data'] }) {
+function lineChart({ data, index }: { data: LineProps['data'], index: string }) {
   return (
     <ResponsiveLine
       data={data}
+      colors={{ scheme: colorScheme }}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: 'point' }}
       yScale={{ type: 'linear', min: 'auto', max: 'auto', reverse: false }}
       yFormat=" >-.2f"
-      axisTop={null}
-      enableSlices="x"
       sliceTooltip={({slice}) => <SliceTooltip slice={slice}/>}
+      axisTop={null}
+      theme={customTheme}
+      enableSlices="x"
       axisRight={null}
       axisBottom={{
           tickSize: 5,
@@ -26,15 +29,11 @@ function lineChart({ data }: { data: LineProps['data'] }) {
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
-          legend: 'Price',
-          legendOffset: -40,
+          legend: index,
+          legendOffset: -45,
           legendPosition: 'middle'
       }}
-      colors={{ scheme: 'red_purple' }}
       pointSize={10}
-      theme={{
-        textColor: '#fff',
-      }}
       enableGridX={false}
       enableGridY={false}
       pointBorderColor={{ from: 'serieColor' }}

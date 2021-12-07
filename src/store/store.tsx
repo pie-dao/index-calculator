@@ -93,9 +93,38 @@ type BarsData = {
 
 type SerieGetter = (item: IndexCalculatorOutput) => Datum[];
 
+const adjustPrecisionSwitch = (n: number): number | string => {
+  switch (true) {
+    case n > 10_000:
+      return Number(n.toPrecision(4))
+    case n > 100:
+      return Math.round(n)
+    case n > 10:
+      return Number(n.toPrecision(1))
+    case n > 1:
+      return Number(n.toPrecision(2))
+    case (n > -1):
+      return Number(n.toPrecision(4))
+    case (n > -10):
+      return Number(n.toPrecision(2))
+    case n > -100:
+      return Number(n.toPrecision(1))
+    case n < -100:
+      return Math.round(n)       
+    default:
+      return n
+  }
+};
 
-const performanceGetter: SerieGetter = item => item.performance.map(i => ({ x: new Date(i[0]).toISOString().slice(0, 10), y: i[1] }));
-const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({ x: index, y: r }));
+
+const performanceGetter: SerieGetter = item => item.performance.map(i => ({
+  x: new Date(i[0]).toISOString().slice(0, 10),
+  y: i[1]
+}));
+const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({
+  x: index,
+  y: r
+}));
 const priceGetter: SerieGetter = item => item.data.prices.map(p => ({ x: p[0], y: p[1] }));
 
 const getLineData = (data: IndexCalculatorOutput[], getter: SerieGetter): Serie[] => {
@@ -132,20 +161,32 @@ const getHeatmapKeys = (data: IndexCalculatorOutput[]): string[] => {
 const getPieData = (data: IndexCalculatorOutput[]): PieData[] => data.map(item => ({
     id: item.name,
     label: item.name,
-    value: item.RATIO
+    value: Number(Number(item.RATIO).toPrecision(2))
   })
 );
 
 const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
   const { backtesting, data, performance, ...kpis } = item;
-  return kpis
-})
+  return adjustKPIPrecision(kpis)
+});
 
+const adjustKPIPrecision = (kpis: KPIs): KPIs => Object
+  .entries(kpis)
+  .reduce((prev, [key, value]) => {
+    let newValue = value;
+    if (typeof value === 'number') {
+      newValue = adjustPrecisionSwitch(value);
+    } else if (Number(value)) {
+      newValue = adjustPrecisionSwitch(Number(value))
+    }
+    return { ...prev, [key]: newValue }
+  }, {} as KPIs
+);
 
 const getKeys = (data: IndexCalculatorOutput[]): string[] => data.map(item => item.name);
 
 const getBarDatum = (data: IndexCalculatorOutput[], KPI: keyof KPIs): BarDatum => data.reduce((prev, curr) => {
-  const record = { [curr.name]: curr[KPI] };
+  const record = { [curr.name]: adjustPrecisionSwitch(Number(curr[KPI])) };
   return { ...prev,  ...record };
 }, {})
 
@@ -161,7 +202,16 @@ const getBarDataForKPI = (data: IndexCalculatorOutput[], kpi: keyof KPIs): BarPr
 
 const getBarData = (data: IndexCalculatorOutput[]): BarsData => {
   const kpis = getKpis(data)[0];
-  const excluded = ['coingeckoId', 'name', 'ADJUSTED', 'adjustedMarketCAP', 'addedRatio'];
+  const excluded = [
+    'coingeckoId',
+    'name',
+    'ADJUSTED',
+    'adjustedMarketCAP',
+    'addedRatio',
+    'CAPPED',
+    'initialAmounts',
+    'RATIO'
+  ];
   const barDataArray = Object.keys(kpis)
     .filter(kpi => !excluded.includes(kpi))  
     .map((kpi: string) => ({

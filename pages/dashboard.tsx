@@ -2,10 +2,11 @@ import React from 'react'
 import HeatMap from './components/dashboard/charts/HeatMap'
 import LineChart from './components/dashboard/charts/LineChart'
 import PieChart from './components/dashboard/charts/PieChart'
-import Panel from './components/ui/panel'
+import Panel from './components/ui/Panel'
 import { KPIs, StoreContext } from '../src/store/store'
 import BigNumber from 'bignumber.js'
 import BarChart from './components/dashboard/charts/BarChart'
+import { formatBarAxis } from '../src/utils'
 
 
 const TitleCard = (): JSX.Element => (
@@ -21,7 +22,26 @@ const TitleCard = (): JSX.Element => (
 )
 
 const handleBigNumber = (b: BigNumber | number | string): string | number => {
-  return (b instanceof BigNumber) ? b.toString() : b; 
+  if (b instanceof BigNumber) {
+    return formatBigNumber(b)
+  } else if (typeof b === 'number') {
+    return formatBarAxis(b)
+  } else {
+    return b
+  }
+}
+
+const formatBigNumber = (b: BigNumber): string => {
+  switch (true) {
+    case b.isGreaterThan(1_000_000_000_000):
+      return b.dividedBy(1_000_000_000_000).toString() + ' T'
+    case b.isGreaterThan(1_000_000_000):
+      return b.dividedBy(1_000_000_000).toString() + ' B'
+    case b.isGreaterThan(1_000_000):
+      return b.dividedBy(1_000_000).toString() + ' M'
+    default:
+      return b.toString()
+  } 
 }
 
 const KPITable = ({ data }: { data: KPIs[] }): JSX.Element => (
@@ -84,10 +104,10 @@ function dashboard() {
         <PieChart data={store.pies.ratio}/>
       </Panel>
       <Panel size="h-1/2 m-2" title="Backtesting Returns Line Chart">
-          <LineChart data={store.lines.returns} />
+          <LineChart data={store.lines.returns} index='% Change' />
       </Panel>
       <Panel size="h-1/2 m-2" title="Performance Line Chart">
-          <LineChart data={store.lines.performance} />
+          <LineChart data={store.lines.performance} index='% Change' />
       </Panel>
       <Panel size="h-1/2 m-2" title="Portfolio Covariance Heatmap">
           <HeatMap
