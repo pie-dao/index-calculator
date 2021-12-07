@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineProps, ResponsiveLine } from '@nivo/line'
 import { SliceTooltip } from './tooltips'
-import { colorScheme, customTheme } from './theme'
+import { customTheme } from './theme'
 
 function lineChart({ data, index }: { data: LineProps['data'], index: string }) {
   return (

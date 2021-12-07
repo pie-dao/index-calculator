@@ -1,9 +1,11 @@
 import { BarDatum, ResponsiveBar } from '@nivo/bar'
-import { formatBarAxis } from '../../../../src/utils'
+import { formatLargeInteger } from '../../../../src/utils/numberPrecision'
 import { colorScheme, customTheme } from './theme'
 import { BarTooltip } from './tooltips'
 
-const BarChart = ({ data, keys, index }: { data: BarDatum[], keys: string[], index: string }) => (
+export type BarChartProps = { data: BarDatum[], keys: string[], index: string }
+
+const BarChart = ({ data, keys, index }: BarChartProps) => (
     <ResponsiveBar
         data={data}
         keys={keys}
@@ -28,7 +30,7 @@ const BarChart = ({ data, keys, index }: { data: BarDatum[], keys: string[], ind
             legend: index,
             legendPosition: 'middle',
             legendOffset: 32,
-            format: v => formatBarAxis(v)
+            format: v => formatLargeInteger(v)
         }}
         enableGridY={false}
         axisLeft={{

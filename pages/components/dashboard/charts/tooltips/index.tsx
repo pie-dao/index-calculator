@@ -1,10 +1,8 @@
-import { BarDatum } from "@nivo/bar";
-import { HeatMapData, HeatMapDatum } from "@nivo/heatmap";
 import { DatumValue, Point } from "@nivo/line"
 import { PieTooltipProps } from "@nivo/pie";
 import React from "react"
-import { PieData } from "../../../../../src/store/store";
-import { formatBarAxis } from "../../../../../src/utils";
+import { PieData } from "../../../../../src/types/store";
+import { formatLargeInteger } from "../../../../../src/utils/numberPrecision";
 
 type SliceProps = { 
   slice: { 
@@ -85,7 +83,7 @@ export const HeatmapToolTip = (props: HeatmapTooltipProps): JSX.Element => (
 export const BarTooltip = ({ id, value }: BarTooltipProps): JSX.Element => (
   <Tooltip title={''}>
     <strong style={{ color: 'black' }}>
-        {id}: {formatBarAxis(value)}
+        {id}: {formatLargeInteger(value)}
     </strong>
   </Tooltip>
 )

@@ -3,7 +3,7 @@ import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import LoadingSpinner from './components/ui/LoadingSpinner';
-import StoreContextProvider from '../src/store/store';
+import StoreContextProvider from '../src/context/StoreContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();

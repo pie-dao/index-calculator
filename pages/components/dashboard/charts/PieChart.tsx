@@ -1,5 +1,5 @@
 import { ResponsivePie } from '@nivo/pie'
-import { PieData } from '../../../../src/store/store'
+import { PieData } from '../../../../src/types/store'
 import { colorScheme, customTheme } from './theme'
 import { PieToolTip } from './tooltips'
 
