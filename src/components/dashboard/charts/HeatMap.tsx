@@ -27,6 +27,7 @@ function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], 
         forceSquare={true}
         theme={customTheme}
         padding={4}
+        margin={{ top: 50, right: 0, bottom: 0, left: 50 }}
         colors="PuRd"
         axisTop={{ tickSize: 5, tickPadding: 5, tickRotation: -90, legend: '', legendOffset: 36 }}
         axisRight={null}
@@ -35,9 +36,6 @@ function heatMap({ data, keys, index }: { data: HeatMapDatum[], keys: string[], 
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: index.toUpperCase(),
-            legendPosition: 'middle',
-            legendOffset: -50
         }}
         cellOpacity={1}
         cellBorderWidth={4}

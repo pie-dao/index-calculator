@@ -14,57 +14,56 @@ function Dashboard() {
   return (
     <div className="h-screen overflow-auto">
       <TitleCard />
-      <Panel size="h-1/2 m-2" title="Backtesting Returns Line Chart">
+      <Panel size="h-1/2 m-2 overflow-x-auto" title="Backtesting Returns Line Chart">
           <LineChart data={store.lines.returns} index='% Change' />
       </Panel>
-      <Panel size="h-1/2 m-2" title="Performance Line Chart">
-          <LineChart data={store.lines.performance} index='% Change' />
+      <Panel size="h-1/2 m-2 overflow-x-auto" title="Performance Line Chart">
+          <LineChart data={store.lines.performance} index='% Change'/>
       </Panel>
-      <Panel size="h-1/2 m-2" title="Heatmaps">
-        <div className="flex flex-row flex-wrap h-full justify-center items-center">
-          <div>
-            <h1>Portfolio Correlation</h1>
+      <div className="card bordered m-2" >
+        <div className="card-body flex flex-col">
+          <h2 className="card-title">Heatmaps</h2>       
+        </div>
+        <div className="flex h-full mb-10 flex-row flex-wrap justify-center items-center">
+          <div className="w-1/3 m-3 h-96 flex flex-col" style={{ minWidth: '400px' }}>
+            <h3 className="ml-2 w-full mb-3">Correlation:</h3>  
+            <HeatMap
+              data={store.heatmaps.correlation.data}
+              keys={store.heatmaps.correlation.keys}
+              index={store.heatmaps.correlation.index}
+            />
           </div>
-          <div className="h-full flex-initial w-1/2" style={{ minWidth: '500px' }}>
-          <HeatMap
-            data={store.heatmaps.correlation.data}
-            keys={store.heatmaps.correlation.keys}
-            index={store.heatmaps.correlation.index}
-          />
+          <div className="w-1/3 m-3 h-96 flex flex-col" style={{ minWidth: '400px' }}>
+            <h3 className="ml-2 w-full mb-3">Covariance:</h3>
+            <HeatMap
+              data={store.heatmaps.covariance.data}
+              keys={store.heatmaps.covariance.keys}
+              index={store.heatmaps.covariance.index}
+            />
           </div>
         </div>
-        <div className="flex flex-row flex-wrap h-full justify-center items-center">
-          <div>
-            <h1>Portfolio Covariance</h1>
-          </div>
-          <div className="h-full flex-initial w-1/2" style={{ minWidth: '500px' }}>
-          <HeatMap
-            data={store.heatmaps.covariance.data}
-            keys={store.heatmaps.covariance.keys}
-            index={store.heatmaps.covariance.index}
-          />
-          </div>
-        </div>        
-      </Panel>
-      <Panel size="h-1/2 m-2" title="KPI Table">
-          <KPITable data={store.tables.kpi} />
-      </Panel>
+      </div>
+      <div className="card bordered m-2 p-2">
+        <KPITable data={store.tables.kpi} />
+      </div>  
       <Panel size="h-1/2 m-2" title="Portfolio Split Pie Chart">
         <PieChart data={store.pies.ratio}/>
       </Panel>
-      <div className="flex flex-row flex-wrap h-1/2 justify-center items-center">
-      <div>
-        <h1>Summary Bar Charts</h1>
-      </div>
-      {
-        Object.entries(store.bars).map(([kpi, data]) => (
-          // <Panel size="h-1/2 m-2 w-1/2" title={kpi} key={kpi}>
-          <div key={kpi} className="h-full flex-initial max-w-1/2" style={{ minWidth: '500px' }}>
-            <BarChart data={data.data} keys={data.keys} index={data.index} />
+      <div className="card bordered m-2">
+        <div className="card-body h-full flex flex-col">
+          <div className="card title w-full">
+            <h1>Summary Bar Charts</h1>
           </div>
-          // </Panel>    
-        ))
-      }
+          <div className="flex flex-row flex-wrap h-full justify-center items-center">
+          {
+            Object.entries(store.bars).map(([kpi, data]) => (
+              <div key={kpi} className="h-96 max-w-1/2" style={{ minWidth: '500px' }}>
+                <BarChart data={data.data} keys={data.keys} index={data.index} />
+              </div>
+            ))
+          }
+          </div>
+        </div>
       </div>
     </div>
   )
