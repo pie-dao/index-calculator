@@ -22,6 +22,9 @@ export interface KPIs {
   totalContribution?:       number;
   MCTR?:                    number;
   tokenBalance:             number;
+  sentimentScore?:          number;
+  sentimentRATIO?:          number;
+  finalWEIGHT?:             number;
 }
 
 export interface IndexCalculatorOutput extends KPIs  {
