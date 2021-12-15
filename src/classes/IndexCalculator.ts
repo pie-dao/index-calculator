@@ -5,6 +5,8 @@ import { jStat } from 'jstat'
 import * as _ from 'lodash'
 import BigNumber from 'bignumber.js'
 
+type Matrix = number[][];
+
 BigNumber.set({ DECIMAL_PLACES: 10, ROUNDING_MODE: 4 })
 
 // if you need 3 digits, replace 1e2 with 1e3 etc.
@@ -25,18 +27,17 @@ const round = (num, digits = 4, base = 10) => {
   // return Math.round(num*pow) / pow;
 }
 
-const getDot = (arrA, arrB, row, col) => {
+const getDot = (arrA: Matrix, arrB: Matrix, row: number[], col: number) => {
+  /**
+   * @returns Dot product of two matricies
+   */
   return arrA[row].map((val, i) => val * arrB[i][col]).reduce((valA, valB) => valA + valB)
 }
 
-const multiplyMatricies = (a, b) => {
-  let matrixShape = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0))
-  return matrixShape.map((row, i) => row.map((val, j) => getDot(a, b, i, j)))
-}
-
-const randomIntFromInterval = (min, max) => {
-  return Math.random() * (max - min + 1) + min
-}
+const multiplyMatricies = (a: Matrix, b: Matrix): Matrix => {
+  let matrixShape: Matrix = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0))
+  return matrixShape.map((row, i) => row.map((_, j) => getDot(a, b, i, j)))
+};
 
 export class IndexCalculator {
   public dataSet: Array<any>
