@@ -1,17 +1,13 @@
-// @ts-nocheck
-import CoinGecko from 'coingecko-api'
-import { jStat } from 'jstat'
-
 import * as _ from 'lodash'
+import jStat from 'jstat';
 import BigNumber from 'bignumber.js'
-
-type Matrix = number[][];
+import { IndexCalculatorOutput } from '@/types/indexCalculator'
 
 BigNumber.set({ DECIMAL_PLACES: 10, ROUNDING_MODE: 4 })
 
 // if you need 3 digits, replace 1e2 with 1e3 etc.
 // or just copypaste this function to your code:
-const round = (num, digits = 4, base = 10) => {
+const round = (num: number, digits = 4, base = 10) => {
   return +(Math.round(+(num + `e+${digits}`)) + `e-${digits}`)
 
   // Method 1
@@ -27,21 +23,20 @@ const round = (num, digits = 4, base = 10) => {
   // return Math.round(num*pow) / pow;
 }
 
-const getDot = (arrA: Matrix, arrB: Matrix, row: number[], col: number) => {
-  /**
-   * @returns Dot product of two matricies
-   */
+type Matrix = Array<number[]>
+
+const getDot = (arrA: Matrix, arrB: Matrix, row: number, col: number) => {
   return arrA[row].map((val, i) => val * arrB[i][col]).reduce((valA, valB) => valA + valB)
 }
 
-const multiplyMatricies = (a: Matrix, b: Matrix): Matrix => {
-  let matrixShape: Matrix = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0))
-  return matrixShape.map((row, i) => row.map((_, j) => getDot(a, b, i, j)))
-};
+const multiplyMatricies = (a: Matrix, b: Matrix) => {
+  let matrixShape = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0))
+  return matrixShape.map((row, i) => row.map((val, j) => getDot(a, b, i, j)))
+}
 
 export class IndexCalculator {
-  public dataSet: Array<any>
-  public performance: Array<any>
+  public dataSet: Array<any>;
+  public performance: Array<[number, number]>
   public name: string
   public SHARPERATIO: number
   public cumulativeUnderlyingMCAP: number
@@ -51,21 +46,29 @@ export class IndexCalculator {
   private indexStartingNAV: number // Calculated in USD
   private sentimentWeightInfluence: number
   private marketWeightInfluence: number
-  public nav: Array<any>
+  private leftover: number
+  public nav: Array<number[]>
   underlyingAmounts: any[]
 
-  constructor(name, maxweight = '1', sentimentWeight = '0.0') {
+  constructor(name: string, maxweight = '1', sentimentWeight = '0.0') {
     this.dataSet = []
     this.maxWeight = parseFloat(maxweight)
     this.name = name
+    this.SHARPERATIO = 0
+    this.cumulativeUnderlyingMCAP = 0
+    this.VARIANCE = 0
+    this.STDEV = 0
     this.performance = []
     this.indexStartingNAV = 1000
+    this.nav = []
+    this.underlyingAmounts = []
+    this.leftover = 0
     this.sentimentWeightInfluence = parseFloat(sentimentWeight)
     this.marketWeightInfluence = 1 - this.sentimentWeightInfluence
     console.log('marketWeightInfluence', this.marketWeightInfluence)
   }
 
-  async fetchCoinData(id) {
+  async fetchCoinData(id: string): Promise<IndexCalculatorOutput> {
     let res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${id}/market_chart?days=30&vs_currency=usd&interval=daily`
     )
@@ -73,27 +76,10 @@ export class IndexCalculator {
     return data
   }
 
-  async pullData(useSnapshot = false, tokens) {
+  async pullData(tokens: Array<{ coingeckoId: string }>) {
     for (const token of tokens) {
-      let jsonSnapshot
-      let hasSnapshot = false
-
-      try {
-        if (useSnapshot) {
-          //jsonSnapshot = await require(path.resolve(this.path, `coins/${token.coingeckoId}.json`));
-          hasSnapshot = true
-        }
-      } catch (e) {
-        console.log('No cached data for: ', token.coingeckoId)
-      }
-
-      if (hasSnapshot) {
-        this.dataSet.push({ ...jsonSnapshot, ...token })
-        continue
-      }
-      console.log(`Fetchin ${token.coingeckoId} ...`)
-      let response: any = await this.fetchCoinData(token.coingeckoId)
-
+      console.log(`Fetching ${token.coingeckoId} ...`)
+      let response = await this.fetchCoinData(token.coingeckoId)
       let coin = {
         ...token,
         backtesting: {},
@@ -104,97 +90,131 @@ export class IndexCalculator {
   }
 
   computeMCAP() {
+    /**
+     * Extract the market cap data into MIN, MAX and AVG
+     * Also sets a cumulative total average market cap, for the period
+     */
     this.dataSet.forEach((el) => {
-      let marketCap = el.data.market_caps.map((o) => {
-        // o[0] Timestamp
-        // o[1] Value
-        return o[1]
-      })
+      let marketCap = el.data.market_caps.map(([_, value]: [number, number]) => value);
       el.MIN_MCAP = Math.min(...marketCap)
       el.MAX_MCAP = Math.max(...marketCap)
-      el.AVG_MCAP = marketCap.reduce((a, b) => a + b, 0) / marketCap.length
-    })
+      el.AVG_MCAP = marketCap.reduce((a: number, b: number) => a + b, 0) / marketCap.length
+    });
 
     this.cumulativeUnderlyingMCAP = this.dataSet.reduce((a, b) => a + b.AVG_MCAP, 0)
   }
 
   computeWeights() {
+    /**
+     * Take the average market cap of each coin, over the period
+     * and normalise it as a percentage of the total market cap
+     * ** Of the portfolio **
+     * 
+     * @param el.RATIO is set to the % of the portfolio occupied by that coin
+     */
     this.dataSet.forEach((el) => {
       if (el.RATIO) throw new Error('Ratio already present')
-      //Readeble: el.RATIO = el.AVG_MCAP / this.cumulativeUnderlyingMCAP;
-      el.originalRATIO = new BigNumber(el.AVG_MCAP).dividedBy(new BigNumber(this.cumulativeUnderlyingMCAP)).toNumber()
+      const bigAVG_MCAP = new BigNumber(el.AVG_MCAP);
+      const bigUnderlyingMCAP = new BigNumber(this.cumulativeUnderlyingMCAP);
+      el.originalRATIO = bigAVG_MCAP.dividedBy(bigUnderlyingMCAP).toNumber()
       el.RATIO = el.originalRATIO
     })
   }
 
-  getTotal() {
+  _capRatio(el: IndexCalculatorOutput) {
+    /**
+     * If ratio > maxWeight, cap the ratio and carry the remainder
+     */
+    // el.cappedRATIO = this.maxWeight
+    el.leftover = el.RATIO - this.maxWeight
+    el.RATIO = this.maxWeight
+    el.CAPPED = true
+    el.ADJUSTED = false
+  }
+
+
+  _adjustMetrics(el: IndexCalculatorOutput, totalLeftover: number, leftoverMCAP: number) {
+    // el.relativeToLeftoverRATIO = el.AVG_MCAP / leftoverMCAP;
+    el.relativeToLeftoverRATIO = new BigNumber(el.AVG_MCAP).dividedBy(new BigNumber(leftoverMCAP))
+
+    //el.adjustedMarketCAP = el.relativeToLeftoverRATIO * totalLeftover * this.cumulativeUnderlyingMCAP;
+    el.adjustedMarketCAP = el.relativeToLeftoverRATIO
+      .multipliedBy(new BigNumber(totalLeftover))
+      .multipliedBy(new BigNumber(this.cumulativeUnderlyingMCAP))
+
+    //el.addedRatio = el.adjustedMarketCAP / this.cumulativeUnderlyingMCAP;
+    el.addedRatio = el.adjustedMarketCAP.dividedBy(new BigNumber(this.cumulativeUnderlyingMCAP))
+
+    //el.adjustedRATIO = el.originalRATIO + el.addedRatio;
+    el.adjustedRATIO = new BigNumber(el.RATIO).plus(el.addedRatio)
+  }
+
+  _setFallbackRatio (el: IndexCalculatorOutput) {
+    /**
+     * Set the ratio to the largest of the adjusted ratio or
+     * max weight, if the number of iterations gets too large
+     */
+    el.RATIO = el.adjustedRATIO!.toNumber() > this.maxWeight
+      ? this.maxWeight
+      : el.adjustedRATIO!.toNumber()
+  }
+
+  computeAdjustedWeights(counter = 0) {
+    /**
+     * If weights provided are above the max, we need to adjust them.
+     * Recursively adjusts weights and metrics up to 10 times otherwise use the max weight. 
+     */
+    let totalLeftover = 0;
+    let leftoverMCAP = 0;
+
+    this.dataSet.forEach((el) => {
+      if (el.RATIO > this.maxWeight) {
+        this._capRatio(el);
+        totalLeftover += el.leftover;
+      } else {
+        el.CAPPED = false;
+        el.ADJUSTED = true;
+        leftoverMCAP += el.AVG_MCAP;
+      }
+    });
+
+    let ratio = false
+    this.dataSet.forEach((el) => {
+      if (el.ADJUSTED) {
+        this._adjustMetrics(el, totalLeftover, leftoverMCAP);
+        if (counter > 10) {
+          this._setFallbackRatio(el);
+        } else {
+          el.RATIO = el.adjustedRATIO.toNumber()
+        }
+      };
+
+      if (el.RATIO > this.maxWeight) ratio = true;
+    });
+
+    if (ratio) {
+      this.getTotal()
+      this.computeAdjustedWeights(counter + 1)
+    };
+  }
+
+  getTotal(): number {
+    /**
+     * Called if Ratio > Max Weight
+     * @Dev Not sure if this does anything?
+     */
     let total = this.dataSet.reduce((a, v) => a + v.RATIO, 0)
     console.log(`\nTotal: ${round(total)}\n`)
     return total
   }
 
-  computeAdjustedWeights(counter = 0) {
-    let totalLeftover = 0
-    let leftoverMCAP = 0
-
-    this.dataSet.forEach((el) => {
-      if (el.RATIO > this.maxWeight) {
-        el.cappedRATIO = this.maxWeight
-        el.leftover = el.RATIO - this.maxWeight
-        el.RATIO = this.maxWeight
-        el.CAPPED = true
-        el.ADJUSTED = false
-        totalLeftover += el.leftover
-      } else {
-        el.CAPPED = false
-        el.ADJUSTED = true
-        leftoverMCAP += el.AVG_MCAP
-      }
-    })
-
-    let ratio = false
-    this.dataSet.forEach((el) => {
-      if (el.ADJUSTED) {
-        // el.relativeToLeftoverRATIO = el.AVG_MCAP / leftoverMCAP;
-
-        el.relativeToLeftoverRATIO = new BigNumber(el.AVG_MCAP).dividedBy(new BigNumber(leftoverMCAP))
-
-        //el.adjustedMarketCAP = el.relativeToLeftoverRATIO * totalLeftover * this.cumulativeUnderlyingMCAP;
-        el.adjustedMarketCAP = el.relativeToLeftoverRATIO
-          .multipliedBy(new BigNumber(totalLeftover))
-          .multipliedBy(new BigNumber(this.cumulativeUnderlyingMCAP))
-
-        //el.addedRatio = el.adjustedMarketCAP / this.cumulativeUnderlyingMCAP;
-        el.addedRatio = el.adjustedMarketCAP.dividedBy(new BigNumber(this.cumulativeUnderlyingMCAP))
-
-        //el.adjustedRATIO = el.originalRATIO + el.addedRatio;
-        el.adjustedRATIO = new BigNumber(el.RATIO).plus(el.addedRatio)
-
-        if (counter > 10)
-          el.RATIO = el.adjustedRATIO.toNumber() > this.maxWeight ? this.maxWeight : el.adjustedRATIO.toNumber()
-        else el.RATIO = el.adjustedRATIO.toNumber()
-      }
-
-      if (el.RATIO > this.maxWeight) {
-        ratio = true
-      }
-    })
-
-    // this.dataSet.forEach(el => {
-    //     console.log(`${el.name}: ${(el.RATIO*100).toFixed(2)}%`)
-    // });
-
-    if (ratio) {
-      this.getTotal()
-      // console.log('Calling it again')
-      // console.log('---------------------')
-      // console.log('\n\n')
-      this.computeAdjustedWeights(counter + 1)
-    }
-  }
-
-  getTokenLastPrice(el) {
-    return parseFloat(_.last(el.data.prices)[1])
+  getTokenLastPrice(el: IndexCalculatorOutput): number {
+    const { prices } = el.data;
+    const lastPrice = _.last(prices);
+    if (lastPrice && lastPrice.length > 0) {
+      return parseFloat(String(lastPrice[1]))
+    };
+    return 0
   }
 
   computeSentimentWeight() {
@@ -248,9 +268,9 @@ export class IndexCalculator {
       }
     })
 
-    this.dataSet.forEach((el) => {
-      let logs = el.data.prices.map((o) => {
-        return o[2]
+    this.dataSet.forEach((el: IndexCalculatorOutput) => {
+      let logs = el.data.prices.map(([_, __, logPriceDifference]) => {
+        return logPriceDifference
       })
 
       //Passing true indicates to compute the sample variance.
@@ -272,8 +292,8 @@ export class IndexCalculator {
   }
 
   computeCovariance() {
-    let matrixC = []
-    let matrixB = []
+    let matrixC: Matrix = [];
+    let matrixB: Matrix = [];
 
     for (let i = 0; i < this.dataSet.length; i++) {
       const current = this.dataSet[i]
@@ -354,7 +374,7 @@ export class IndexCalculator {
     this.nav = []
     //Calculate the performance of the index
     for (let i = 0; i < this.dataSet[0].data.prices.length; i++) {
-      const timestamp = this.dataSet[0].data.prices[i][0]
+      const timestamp: number = this.dataSet[0].data.prices[i][0]
       let tempCalc = 0
       let tempNav = 0
 
@@ -371,13 +391,25 @@ export class IndexCalculator {
       this.nav.push([timestamp, tempNav])
       this.performance.push([timestamp, tempCalc])
     }
-  }
+  };
 
   computeSharpeRatio() {
-    this.SHARPERATIO = _.last(this.performance)[1] / this.STDEV
-  }
+    const lastPerformance = _.last(this.performance);
+    if (lastPerformance && lastPerformance.length > 0) {
+      const [_, performance] = lastPerformance;
+      this.SHARPERATIO = performance / this.STDEV
+    };
+  };
 
-  computeAll({ adjustedWeight, sentimentWeight, computeWeights }) {
+  computeAll({
+    adjustedWeight,
+    sentimentWeight,
+    computeWeights
+  }: {
+    adjustedWeight: number,
+    sentimentWeight: number,
+    computeWeights: number
+  }) {
     this.computeMCAP()
     if (computeWeights) this.computeWeights()
     this.computeInitialTokenAmounts()

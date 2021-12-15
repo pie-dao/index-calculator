@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js";
+
 export interface KPIs {
   name:                     string;
   coingeckoId:              string;
@@ -5,14 +7,15 @@ export interface KPIs {
   MAX_MCAP:                 number;
   AVG_MCAP:                 number;
   originalRATIO?:           number;
-  RATIO:                    number | string;
+  RATIO:                    number;
   initialAmounts:           number;
   CAPPED?:                  boolean;
   ADJUSTED?:                boolean;
-  relativeToLeftoverRATIO?: string;
-  adjustedMarketCAP?:       string;
-  addedRatio?:              string;
-  adjustedRATIO?:           string;
+  leftover?:                number;
+  relativeToLeftoverRATIO?: BigNumber;
+  adjustedMarketCAP?:       BigNumber;
+  addedRatio?:              BigNumber;
+  adjustedRATIO?:           BigNumber;
   VARIANCE?:                number;
   STDEV?:                   number;
   marginalContribution?:    number;

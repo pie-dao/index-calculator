@@ -2,7 +2,7 @@
     {
         "name": "DOUGH",
         "coingeckoId": "piedao-dough-v2",
-        "RATIO": "0.3",
+        "RATIO": 0,
         "backtesting": {
             "returns": [
                 0,
@@ -601,7 +601,7 @@
     {
         "name": "ETH",
         "coingeckoId": "ethereum",
-        "RATIO": "0.1",
+        "RATIO": 0.1,
         "backtesting": {
             "returns": [
                 0,

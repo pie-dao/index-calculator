@@ -40,12 +40,13 @@ export default function IndexForm() {
       
       if(stop) return;
       const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
-      await indexCalculator.pullData(false, data)
+      await indexCalculator.pullData(data)
       indexCalculator.computeAll({
         adjustedWeight: computeWeights,
         sentimentWeight: sentimentScore,
         computeWeights: computeWeights,
-      })
+      });
+      console.dir(indexCalculator);
       const portfolioString = JSON.stringify(indexCalculator.dataSet);
       console.log('Performance', indexCalculator.performance);
       console.log('idx', portfolioString);
@@ -58,6 +59,7 @@ export default function IndexForm() {
         router.push('/dashboard');
       };
     } catch (err) {
+      console.warn(err);
       alert(`One or more of the Coingecko IDs was not recognised, try again. The [Coin ID] can be found in the coingecko url: https://www.coingecko.com/en/coins/[Coin ID]`);
     }
   }

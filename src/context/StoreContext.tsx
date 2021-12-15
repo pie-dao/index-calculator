@@ -44,13 +44,15 @@ export const convertToStoreData = (data: IndexCalculatorOutput[], performance: P
   bars: getBarData(data)
 });
 
+const castSampleData = sampleData as IndexCalculatorOutput[];
+const castPerformance = performance as Performance;
 
 export const StoreContext = createContext<StoreContextProps>({
-  store: convertToStoreData(sampleData, performance as Performance),
+  store: convertToStoreData(castSampleData, castPerformance),
 });
 
 export const StoreContextProvider = (props: { children: React.ReactNode }): JSX.Element => {
-  const storeData = convertToStoreData(sampleData, performance as Performance);
+  const storeData = convertToStoreData(castSampleData, castPerformance);
   const [store, setStore] = useState(storeData);
   console.debug({ store });
   return (
