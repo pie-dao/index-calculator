@@ -1,6 +1,13 @@
 import { smallNumberHandler } from "./numberPrecision";
 import { IndexCalculatorOutput, KPIs } from "../types/indexCalculator";
 
+const formatter =  new Intl.NumberFormat(
+  'en-us', {
+    style: 'currency',
+    currency: 'USD'
+  }
+);
+
 export const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
   /**
    * Removes the nested objects from the data set and returns only the KPIs
@@ -15,7 +22,9 @@ export const adjustKPIPrecision = (kpis: KPIs): KPIs => Object
   .entries(kpis)
   .reduce((prev, [key, value]) => {
     let newValue = value;
-    if (typeof value === 'number') {
+    if (key === 'lastPrice') {
+      newValue = formatter.format(value);
+    } else if (typeof value === 'number') {
       newValue = smallNumberHandler(value);
     } else if (Number(value)) {
       newValue = smallNumberHandler(Number(value))

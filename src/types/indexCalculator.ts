@@ -9,6 +9,7 @@ export interface KPIs {
   originalRATIO?:           number;
   RATIO:                    number;
   initialAmounts:           number;
+  lastPrice:                number;
   CAPPED?:                  boolean;
   ADJUSTED?:                boolean;
   leftover?:                number;

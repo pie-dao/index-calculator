@@ -1,0 +1,117 @@
+{
+  "tempMetrics": {
+      "coins": [
+          {
+              "name": "DOUGH",
+              "coins": [
+                  {
+                      "coin": "DOUGH",
+                      "ratio": "0.1",
+                      "stdDev": 0.33804862313237666,
+                      "stdDevParent": 0.33804862313237666,
+                      "correlation": 1.0000000000000002,
+                      "numerator": 0.011427687160169566,
+                      "rollingNumerator": 0.011427687160169566
+                  },
+                  {
+                      "coin": "ETH",
+                      "ratio": "0.4",
+                      "stdDev": 0.26518797546507594,
+                      "stdDevParent": 0.33804862313237666,
+                      "correlation": 0.8540454089867299,
+                      "numerator": 0.03062484878164194,
+                      "rollingNumerator": 0.042052535941811506
+                  },
+                  {
+                      "coin": "BCP",
+                      "ratio": "0.5",
+                      "stdDev": 0.4287859919231076,
+                      "stdDevParent": 0.33804862313237666,
+                      "correlation": 0.31151176380965157,
+                      "numerator": 0.022576895169918766,
+                      "rollingNumerator": 0.06462943111173028
+                  }
+              ],
+              "metrics": {
+                  "totalContributionGlobal": 0.02262165983982371,
+                  "currentTC": 0.02262165983982371,
+                  "currentMC": 0.22621659839823707
+              }
+          },
+          {
+              "name": "ETH",
+              "coins": [
+                  {
+                      "coin": "DOUGH",
+                      "ratio": "0.1",
+                      "stdDev": 0.33804862313237666,
+                      "stdDevParent": 0.26518797546507594,
+                      "correlation": 0.8540454089867298,
+                      "numerator": 0.007656212195410484,
+                      "rollingNumerator": 0.007656212195410484
+                  },
+                  {
+                      "coin": "ETH",
+                      "ratio": "0.4",
+                      "stdDev": 0.26518797546507594,
+                      "stdDevParent": 0.26518797546507594,
+                      "correlation": 1,
+                      "numerator": 0.028129864932506292,
+                      "rollingNumerator": 0.035786077127916774
+                  },
+                  {
+                      "coin": "BCP",
+                      "ratio": "0.5",
+                      "stdDev": 0.4287859919231076,
+                      "stdDevParent": 0.26518797546507594,
+                      "correlation": 0.2775382255396049,
+                      "numerator": 0.015779281655261896,
+                      "rollingNumerator": 0.051565358783178666
+                  }
+              ],
+              "metrics": {
+                  "totalContributionGlobal": 0.09481749915612023,
+                  "currentTC": 0.07219583931629651,
+                  "currentMC": 0.1804895982907413
+              }
+          },
+          {
+              "name": "BCP",
+              "coins": [
+                  {
+                      "coin": "DOUGH",
+                      "ratio": "0.1",
+                      "stdDev": 0.33804862313237666,
+                      "stdDevParent": 0.4287859919231076,
+                      "correlation": 0.31151176380965157,
+                      "numerator": 0.004515379033983754,
+                      "rollingNumerator": 0.004515379033983754
+                  },
+                  {
+                      "coin": "ETH",
+                      "ratio": "0.4",
+                      "stdDev": 0.26518797546507594,
+                      "stdDevParent": 0.4287859919231076,
+                      "correlation": 0.27753822553960483,
+                      "numerator": 0.012623425324209516,
+                      "rollingNumerator": 0.01713880435819327
+                  },
+                  {
+                      "coin": "BCP",
+                      "ratio": "0.5",
+                      "stdDev": 0.4287859919231076,
+                      "stdDevParent": 0.4287859919231076,
+                      "correlation": 1.0000000000000002,
+                      "numerator": 0.09192871343474167,
+                      "rollingNumerator": 0.10906751779293494
+                  }
+              ],
+              "metrics": {
+                  "totalContributionGlobal": 0.2856971220032011,
+                  "currentTC": 0.19087962284708088,
+                  "currentMC": 0.38175924569416175
+              }
+          }
+      ]
+  }
+}

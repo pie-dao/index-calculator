@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 import jStat from 'jstat';
 import BigNumber from 'bignumber.js'
 import { Backtesting, IndexCalculatorOutput } from '@/types/indexCalculator'
+import { camelCase } from 'lodash';
 
 BigNumber.set({ DECIMAL_PLACES: 10, ROUNDING_MODE: 4 })
 
@@ -65,7 +66,6 @@ export class IndexCalculator {
     this.leftover = 0
     this.sentimentWeightInfluence = parseFloat(sentimentWeight)
     this.marketWeightInfluence = 1 - this.sentimentWeightInfluence
-    console.log('marketWeightInfluence', this.marketWeightInfluence)
   }
 
   async fetchCoinData(id: string): Promise<IndexCalculatorOutput['data']> {
@@ -214,7 +214,9 @@ export class IndexCalculator {
     const { prices } = el.data;
     const lastPrice = _.last(prices);
     if (lastPrice && lastPrice.length > 0) {
-      return parseFloat(String(lastPrice[1]))
+      const price =  parseFloat(String(lastPrice[1]))
+      el.lastPrice = price;
+      return price
     };
     return 0
   }
@@ -252,7 +254,7 @@ export class IndexCalculator {
 
   computeTokenNumbers() {
     this.dataSet.forEach((el) => {
-      el.tokenBalance = this.indexStartingNAV * el.RATIO * this.getTokenLastPrice(el)
+      el.tokenBalance = this.indexStartingNAV * el.RATIO * (1 / this.getTokenLastPrice(el));
     })
   }
 
@@ -347,23 +349,46 @@ export class IndexCalculator {
      */
     let totalContributionGlobal = 0
 
+    const tempMetrics = { coins: [] } as any;
     // Calculate first the single marginalContribution
     for (let i = 0; i < this.dataSet.length; i++) {
       const current = this.dataSet[i]
+
+      const _coin = { name: current.name, coins: [], metrics: {} };
+
       if ('correlation' in current.backtesting) {
         let tempCalc = 0
         for (let k = 0; k < this.dataSet.length; k++) {
           const next = this.dataSet[k]
+
           let x = next.RATIO
             * (current.STDEV ?? 0)
             * (next.STDEV ?? 0)
             * current.backtesting.correlation[next.name];
           tempCalc += x;
+          const obj = {
+            coin: next.name,
+            ratio: next.RATIO,
+            stdDev: next.STDEV,
+            stdDevParent: current.STDEV,
+            correlation: current.backtesting.correlation[next.name], 
+            numerator: x,
+            rollingNumerator: tempCalc,
+          };
+          _coin.coins.push(obj);
         }
         current.marginalContribution = tempCalc * (1 / this.STDEV)
         current.totalContribution = current.marginalContribution * current.RATIO
         totalContributionGlobal += current.totalContribution
-      } 
+        _coin.metrics = {
+          totalContributionGlobal,
+          currentTC: current.totalContribution,
+          currentMC: current.marginalContribution,  
+        }
+        tempMetrics.coins.push(_coin);
+        
+      }
+      console.debug({tempMetrics})
     };
 
     // Then calculate MCTR based on the sum of the total contribution
@@ -398,8 +423,8 @@ export class IndexCalculator {
     let tempNav = 0;
     for (let k = 0; k < this.dataSet.length; k++) {
       const coin = this.dataSet[k]
-      console.log('coin.RATIO', coin.RATIO)
-      console.log('coin.initialAmounts * coin.data.prices[i][1];', coin.initialAmounts, coin.data.prices[i][1])
+      // console.log('coin.RATIO', coin.RATIO)
+      // console.log('coin.initialAmounts * coin.data.prices[i][1];', coin.initialAmounts, coin.data.prices[i][1])
       if (coin.data.prices[i][1]) tempNav += coin.initialAmounts * coin.data.prices[i][1];
       if (coin.performance[i]) tempCalc += coin.RATIO * coin.performance[i][1];
     };
