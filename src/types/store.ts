@@ -1,7 +1,7 @@
 import { BarDatum } from "@nivo/bar";
 import { HeatMapDatum } from "@nivo/heatmap";
 import { Datum, Serie } from "@nivo/line";
-import { IndexCalculatorOutput, KPIs } from "./indexCalculator";
+import { HeadlineStat, IndexCalculatorOutput, KPIs } from "./indexCalculator";
 
 export type SerieGetter = (item: IndexCalculatorOutput) => Datum[];
 export type DailyFigure = [number, number];
@@ -41,10 +41,12 @@ export type Store = {
     correlation: HeatMapData,
   };
   pies: {
-    ratio: PieData[]
+    ratio: PieData[],
+    mctr: PieData[],
   };
   tables: {
-    kpi: KPIs[]
+    kpi: KPIs[],
+    headlines: HeadlineStat[],
   },
   bars: BarsData
 }

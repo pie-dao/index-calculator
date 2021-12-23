@@ -5,8 +5,18 @@ import Tooltip from './tooltips'
 
 export const PieToolTip = (props: PieTooltipProps<PieData>): JSX.Element => (
     <Tooltip title={''}>
-        <div style={{ color: 'black' }}>
-          { props.datum.label } : { props.datum.value }
+        <div className="flex justify-space-between items-center">
+
+            <div style={{
+                marginRight: '1rem',
+                width: '10px',
+                height: '10px',
+                backgroundColor: props.datum.color,
+                borderRadius: '100%'
+            }}></div>
+            <div style={{ color: 'black' }}>
+              { props.datum.label } : { props.datum.value * 100 } %
+            </div>
         </div>
     </Tooltip>
 );

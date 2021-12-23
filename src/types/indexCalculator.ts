@@ -1,5 +1,7 @@
+import { IndexCalculator } from "@/classes/IndexCalculator";
 import BigNumber from "bignumber.js";
 
+export type ReducedIndexCalculator = Pick<IndexCalculator, "dataSet" | "SHARPERATIO" | "VARIANCE" | "performance" | "nav">
 export interface KPIs {
   name:                     string;
   coingeckoId:              string;
@@ -21,7 +23,7 @@ export interface KPIs {
   STDEV?:                   number;
   marginalContribution?:    number;
   totalContribution?:       number;
-  MCTR?:                    number;
+  MCTR:                    number;
   tokenBalance:             number;
   sentimentScore?:          number;
   sentimentRATIO?:          number;
@@ -48,4 +50,11 @@ export interface IndexCalculatorData {
   prices:        Array<number[]>;
   market_caps:   Array<number[]>;
   total_volumes: Array<number[]>;
+}
+
+export type HeadlineStat = {
+  title: string,
+  value: number | string,
+  change?: number,
+  text?: 'text-error' | 'text-success'
 }

@@ -6,6 +6,7 @@ import { IndexCalculator } from '../classes/IndexCalculator'
 import { convertToStoreData, StoreContext } from '../context/StoreContext'
 import { useContext } from 'react'
 import { useRouter } from 'next/router'
+import { HeadlineStat } from '@/types/indexCalculator'
 
 const copyToClipboard = (str: string) => {
   const el = document.createElement('textarea');
@@ -18,8 +19,6 @@ const copyToClipboard = (str: string) => {
   document.execCommand('copy');
   document.body.removeChild(el);
 };
-
-
 
 export default function IndexForm() {
 
@@ -46,14 +45,10 @@ export default function IndexForm() {
         sentimentWeight: sentimentScore,
         computeWeights: computeWeights,
       });
-      console.dir(indexCalculator);
       const portfolioString = JSON.stringify(indexCalculator.dataSet);
-      console.log('Performance', indexCalculator.performance);
-      console.log('idx', portfolioString);
-      console.log('idx', indexCalculator);
-      copyToClipboard(portfolioString);
+      // copyToClipboard(portfolioString);
       // alert('Copied to clipboard.')
-      const newStoreData = convertToStoreData(indexCalculator.dataSet, indexCalculator.performance);
+      const newStoreData = convertToStoreData(indexCalculator);
       if (newStoreData && setStore) {
         setStore(newStoreData);
         router.push('/dashboard');

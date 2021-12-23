@@ -23,11 +23,22 @@ const SliceTooltip = ({ slice }: SliceProps): JSX.Element => (
         <div
             key={point.id}
             style={{
-                color: "#000",
+                color: 'black',
                 padding: '3px 0',
             }}
         >
-            <strong>{point.serieId}</strong> {point.data.yFormatted}
+            <div className="flex justify-space-between items-center">
+                <div style={{
+                    marginRight: '1rem',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: point.color,
+                    borderRadius: '100%'
+                }}></div>
+                <div>
+                    <strong>{point.serieId}</strong> {point.data.yFormatted}
+                </div>
+            </div>
         </div>
         ))}
     </Tooltip>
@@ -38,6 +49,7 @@ function lineChart({ data, index }: { data: LineProps['data'], index: string }) 
     <ResponsiveLine
       data={data}
       colors={{ datum: 'color' }}
+      curve="catmullRom"
       margin={{ top: 50, right: 110, bottom: 70, left: 60 }}
       xScale={{ type: 'point' }}
       yScale={{ type: 'linear', min: 'auto', max: 'auto', reverse: false }}

@@ -14,7 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     router.events.on("routeChangeComplete", () => setTimeout(() => setLoading(false), 250));
   }, [router.events])
   
-  return <StoreContextProvider>
+     return <StoreContextProvider>
     {
       loading
         ? <LoadingSpinner />

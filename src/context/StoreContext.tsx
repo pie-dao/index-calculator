@@ -1,60 +1,59 @@
-import { Performance, Store } from "../types/store";
-import sampleData from '../samples/store.json';
-import samplePerformance from '../samples/performance.json';
+import { Store } from "../types/store";
+import sampleData from '../samples/idxCalc.json';
 import { createContext, useState } from "react";
 import { getBarData } from "../utils/bar";
 import { getKpis } from "../utils/table";
-import { getPieData } from "../utils/pie";
+import { getPieData, getMctrData } from "../utils/pie";
 import { getHeatMapData, getHeatmapKeys } from "../utils/heatmap";
 import { addPerformanceToLineData, getLineData, performanceGetter, priceGetter, returnGetter } from "../utils/line";
-import { IndexCalculatorOutput } from "../types/indexCalculator";
+import { ReducedIndexCalculator } from "../types/indexCalculator";
+import { getHeadlines } from "@/utils/headlines";
 
 export type StoreContextProps = {
   store: Store;
   setStore?: (store: Store) => void
 }
 
-const { performance } = samplePerformance;
-
 // Advanced setter function for the store
-export const convertToStoreData = (data: IndexCalculatorOutput[], performance: Performance): Store => ({
+export const convertToStoreData = (
+  indexCalculator: ReducedIndexCalculator
+): Store => ({
   lines: {
-    performance: addPerformanceToLineData(getLineData(data, performanceGetter), performance),
-    returns: getLineData(data, returnGetter),
-    price: getLineData(data, priceGetter),
+    performance: addPerformanceToLineData(getLineData(indexCalculator.dataSet, performanceGetter), indexCalculator.performance),
+    returns: getLineData(indexCalculator.dataSet, returnGetter),
+    price: getLineData(indexCalculator.dataSet, priceGetter),
   },
   heatmaps: {
     covariance: {
-      data: getHeatMapData(data, "token", "covariance"),
-      keys: getHeatmapKeys(data),
+      data: getHeatMapData(indexCalculator.dataSet, "token", "covariance"),
+      keys: getHeatmapKeys(indexCalculator.dataSet),
       index: "token"
     },
     correlation: {
-      data: getHeatMapData(data, "token", "correlation"),
-      keys: getHeatmapKeys(data),
+      data: getHeatMapData(indexCalculator.dataSet, "token", "correlation"),
+      keys: getHeatmapKeys(indexCalculator.dataSet),
       index: "token",
     }
   },
   pies: {
-    ratio: getPieData(data)
+    ratio: getPieData(indexCalculator.dataSet),
+    mctr: getMctrData(indexCalculator.dataSet),
   },
   tables: {
-    kpi: getKpis(data)
+    kpi: getKpis(indexCalculator.dataSet),
+    headlines: getHeadlines(indexCalculator),
   },
-  bars: getBarData(data)
+  bars: getBarData(indexCalculator.dataSet)
 });
 
-const castSampleData = sampleData as IndexCalculatorOutput[];
-const castPerformance = performance as Performance;
 
 export const StoreContext = createContext<StoreContextProps>({
-  store: convertToStoreData(castSampleData, castPerformance),
+  store: convertToStoreData(sampleData as any),
 });
 
 export const StoreContextProvider = (props: { children: React.ReactNode }): JSX.Element => {
-  const storeData = convertToStoreData(castSampleData, castPerformance);
+  const storeData = convertToStoreData(sampleData as any);
   const [store, setStore] = useState(storeData);
-  console.debug({ store });
   return (
     <StoreContext.Provider value={{
         store,

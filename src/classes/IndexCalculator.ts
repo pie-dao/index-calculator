@@ -341,55 +341,29 @@ export class IndexCalculator {
     this.VARIANCE = pieVariance
     this.STDEV = Math.sqrt(pieVariance)
   }
-
   computeMCTR() {
     /**
      * Marginal Contribution to total risk, measure of an asset's volatility
      * relative to the total portfolio.
      */
-    let totalContributionGlobal = 0
-
-    const tempMetrics = { coins: [] } as any;
     // Calculate first the single marginalContribution
-    for (let i = 0; i < this.dataSet.length; i++) {
-      const current = this.dataSet[i]
-
-      const _coin = { name: current.name, coins: [], metrics: {} };
-
+    // for (let i = 0; i < this.dataSet.length; i++) {
+      //   const current = this.dataSet[i]
+      
+    let totalContributionGlobal = 0
+    this.dataSet.forEach(current => {
       if ('correlation' in current.backtesting) {
-        let tempCalc = 0
-        for (let k = 0; k < this.dataSet.length; k++) {
-          const next = this.dataSet[k]
-
-          let x = next.RATIO
+        const numerator = this.dataSet.reduce((_, next) => {
+          return next.RATIO
             * (current.STDEV ?? 0)
             * (next.STDEV ?? 0)
             * current.backtesting.correlation[next.name];
-          tempCalc += x;
-          const obj = {
-            coin: next.name,
-            ratio: next.RATIO,
-            stdDev: next.STDEV,
-            stdDevParent: current.STDEV,
-            correlation: current.backtesting.correlation[next.name], 
-            numerator: x,
-            rollingNumerator: tempCalc,
-          };
-          _coin.coins.push(obj);
-        }
-        current.marginalContribution = tempCalc * (1 / this.STDEV)
+        }, 0);
+        current.marginalContribution = numerator * (1 / this.STDEV)
         current.totalContribution = current.marginalContribution * current.RATIO
         totalContributionGlobal += current.totalContribution
-        _coin.metrics = {
-          totalContributionGlobal,
-          currentTC: current.totalContribution,
-          currentMC: current.marginalContribution,  
-        }
-        tempMetrics.coins.push(_coin);
-        
       }
-      console.debug({tempMetrics})
-    };
+    })
 
     // Then calculate MCTR based on the sum of the total contribution
     this.dataSet.forEach(el => {
