@@ -6,4 +6,5 @@ module.exports = {
     extend: {},
   },
   plugins: [require('daisyui')],
+  // plugins: [require('@pie-dao/tailwind')]
 }

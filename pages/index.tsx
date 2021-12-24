@@ -1,7 +1,10 @@
+import { SelectSearch } from '@/components/ui/SelectSearch'
 import IndexForm from '../src/components/form'
 
 export default function Home() {
   return (
+    <div>
+      <SelectSearch />
     <div className="hero min-h-screen bg-base-200">
       <div className="text-center hero-content">
         <div className="card col-span-1 row-span-3 shadow-lg xl:col-span-2 bg-base-100">
@@ -12,5 +15,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+  </div>
   )
 }

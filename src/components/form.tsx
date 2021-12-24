@@ -6,22 +6,7 @@ import { IndexCalculator } from '../classes/IndexCalculator'
 import { convertToStoreData, StoreContext } from '../context/StoreContext'
 import { useContext } from 'react'
 import { useRouter } from 'next/router'
-import { HeadlineStat } from '@/types/indexCalculator'
-
-const copyToClipboard = (str: string) => {
-  const el = document.createElement('textarea');
-  el.value = str;
-  el.setAttribute('readonly', '');
-  el.style.position = 'absolute';
-  el.style.left = '-9999px';
-  document.body.appendChild(el);
-  el.select();
-  document.execCommand('copy');
-  document.body.removeChild(el);
-};
-
 export default function IndexForm() {
-
   const initialFormState = { portfolio: [{}], computeWeights: true,  sentimentScore: false, useJson: false}
   const { setStore } = useContext(StoreContext);
   const router = useRouter();
@@ -47,7 +32,6 @@ export default function IndexForm() {
       });
       const portfolioString = JSON.stringify(indexCalculator.dataSet);
       // copyToClipboard(portfolioString);
-      // alert('Copied to clipboard.')
       const newStoreData = convertToStoreData(indexCalculator);
       if (newStoreData && setStore) {
         setStore(newStoreData);
@@ -103,7 +87,9 @@ export default function IndexForm() {
                           className="input input-primary input-bordered"
                           name={`${name}.coingeckoId`}
                           component="input"
-                          placeholder="Coingecko ID" />
+                          placeholder="Coingecko ID" >
+                          </Field>
+                          {/* <SelectSearch /> */}
                       </div>
                       {values.computeWeights === false ?
                         <div className="form-control">
