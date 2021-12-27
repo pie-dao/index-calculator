@@ -6,13 +6,14 @@ import { IndexCalculator } from '../classes/IndexCalculator'
 import { convertToStoreData, StoreContext } from '../context/StoreContext'
 import { useContext } from 'react'
 import { useRouter } from 'next/router'
+
 export default function IndexForm() {
   const initialFormState = { portfolio: [{}], computeWeights: true,  sentimentScore: false, useJson: false}
   const { setStore } = useContext(StoreContext);
   const router = useRouter();
   const onSubmit = async (values: any) => {
     try {
-      const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea, sentimentWeight } = values
+      const { portfolio, computeWeights, maxWeight, sentimentScore, useJson, textarea, sentimentWeight } = values;
       let stop = false;
       let data;
       try {
@@ -23,6 +24,7 @@ export default function IndexForm() {
       }
       
       if(stop) return;
+      console.debug({ data });
       const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
       await indexCalculator.pullData(data)
       indexCalculator.computeAll({
@@ -30,8 +32,6 @@ export default function IndexForm() {
         sentimentWeight: sentimentScore,
         computeWeights: computeWeights,
       });
-      const portfolioString = JSON.stringify(indexCalculator.dataSet);
-      // copyToClipboard(portfolioString);
       const newStoreData = convertToStoreData(indexCalculator);
       if (newStoreData && setStore) {
         setStore(newStoreData);
@@ -39,6 +39,7 @@ export default function IndexForm() {
       };
     } catch (err) {
       console.warn(err);
+      console.debug({ portfolio: values.portfolio });
       alert(`One or more of the Coingecko IDs was not recognised, try again. The [Coin ID] can be found in the coingecko url: https://www.coingecko.com/en/coins/[Coin ID]`);
     }
   }
@@ -84,12 +85,11 @@ export default function IndexForm() {
                       </div>
                       <div className="form-control">
                         <Field
-                          className="input input-primary input-bordered"
+                          className="input input-primary input-bordered min-w-95"
                           name={`${name}.coingeckoId`}
+                          placeholder="Coingecko ID"
                           component="input"
-                          placeholder="Coingecko ID" >
-                          </Field>
-                          {/* <SelectSearch /> */}
+                          />
                       </div>
                       {values.computeWeights === false ?
                         <div className="form-control">
@@ -135,7 +135,9 @@ export default function IndexForm() {
                   ))}
                 </FieldArray>
                 <div className="justify-start space-x-2 my-1 card-actions">
-                  <button className="btn btn-primary" type="button" onClick={() => push('portfolio', undefined)}>
+                  <button className="btn btn-primary" type="button" onClick={() => {
+                    push('portfolio', undefined)
+                  }}>
                     Add Coin
                   </button>
                 </div>

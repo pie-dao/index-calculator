@@ -7,14 +7,14 @@ import { useState } from 'react';
 
 const fetcher = (...args: [any]) => fetch(...args).then(res => res.json());
 
-const getOptions = (data: Coin[], query: string): { label: string, value: string }[] => {
+export const getOptions = (data: Coin[], query: string): { label: string, value: string }[] => {
   const fuse = new Fuse(data, {
     keys: ['name', 'value'],
     threshold: 0.6
   });
   return fuse
     .search(query)
-    .map(({ item }) => ({ value: item.id, label: item.name })) 
+    .map(({ item }) => ({ value: item.id, label: item.id })) 
 };
 
 export const SelectSearch = () => {
@@ -26,8 +26,8 @@ export const SelectSearch = () => {
       <Select
         className="text-black bg-black"
         options={options}
-        placeholder="Type a coin to search"
-        onInputChange={e => setQuery(e)}
+        placeholder="Search for a coin from the Coingecko API"
+        onInputChange={ q => { setQuery(q) } }
       />
     </>)
 };

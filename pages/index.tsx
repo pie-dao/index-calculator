@@ -1,7 +1,9 @@
 import { SelectSearch } from '@/components/ui/SelectSearch'
+import { useState } from 'react'
 import IndexForm from '../src/components/form'
 
 export default function Home() {
+  const [coin, setCoin] = useState('');
   return (
     <div>
       <SelectSearch />
