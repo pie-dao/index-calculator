@@ -2,7 +2,17 @@ import { smallNumberHandler } from "./numberPrecision";
 import { IndexCalculatorOutput, KPIs } from "../types/indexCalculator";
 
 const FILTERED: Array<keyof KPIs> = [
-  'STDEV', 'VARIANCE', 'totalContribution', 'marginalContribution'
+  'STDEV',
+  'VARIANCE',
+  'totalContribution',
+  'marginalContribution',
+  'originalRATIO',
+  'relativeToLeftoverRATIO',
+  'adjustedRATIO',
+  'CAPPED',
+  'ADJUSTED',
+  'adjustedMarketCAP',
+  'addedRatio'
 ];
 
 const formatter =  new Intl.NumberFormat(
@@ -11,7 +21,6 @@ const formatter =  new Intl.NumberFormat(
     currency: 'USD'
   }
 );
-
 
 export const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
   /**

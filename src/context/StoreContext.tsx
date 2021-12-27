@@ -54,7 +54,6 @@ export const StoreContext = createContext<StoreContextProps>({
 export const StoreContextProvider = (props: { children: React.ReactNode }): JSX.Element => {
   const storeData = convertToStoreData(sampleData as any);
   const [store, setStore] = useState(storeData);
-  console.debug({ store });
   return (
     <StoreContext.Provider value={{
         store,
