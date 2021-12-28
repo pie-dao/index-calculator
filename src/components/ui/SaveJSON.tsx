@@ -19,8 +19,10 @@ const SaveJSONButton = (props: { data: { portfolio: Array<any> } }): JSX.Element
   if (typeof window !== 'undefined') {
     latest = localStorage.getItem('latest');
   }
+
   const fromLocal = () => {
-    latest ? copyToClipboard(latest, 'Copied most recent index to clipboard') : alert('Couldn\'t find previous index');
+    const _latest = localStorage.getItem('latest')
+    _latest ? copyToClipboard(_latest, 'Copied most recent index to clipboard') : alert('Couldn\'t find previous index');
   }
   const click = () => {
     if (!props.data || props.data.portfolio.length === 0) {

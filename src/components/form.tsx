@@ -80,7 +80,6 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
     if (newStoreData && setStore) {
       if (exportJSON) copyToClipboard(JSON.stringify(indexCalculator.dataSet), "Copied underlying data to the clipboard");
       setStore(newStoreData);
-      console.debug({ indexCalculator });
       router.push('/dashboard');
     };
   } catch (err) {
