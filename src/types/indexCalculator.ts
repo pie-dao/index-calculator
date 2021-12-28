@@ -1,7 +1,7 @@
 import { IndexCalculator } from "@/classes/IndexCalculator";
 import BigNumber from "bignumber.js";
 
-export type ReducedIndexCalculator = Pick<IndexCalculator, "dataSet" | "SHARPERATIO" | "VARIANCE" | "performance" | "nav">
+export type ReducedIndexCalculator = Pick<IndexCalculator, "dataSet" | "SHARPERATIO" | "VARIANCE" | "performance" | "nav" | "backtesting">
 export interface KPIs {
   name:                     string;
   coingeckoId:              string;

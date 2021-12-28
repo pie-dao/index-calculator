@@ -8,7 +8,7 @@ import { useContext, useEffect, useRef } from 'react'
 import { NextRouter, useRouter } from 'next/router'
 import { Option } from './ui/SelectSearch'
 import { Store } from '@/types/store'
-import SaveJSONButton from './ui/SaveJSON'
+import SaveJSONButton, { copyToClipboard } from './ui/SaveJSON'
 import { ERROR_MESSAGES, TOOLTIPS } from '@/utils/constants'
 import { HelpIcon } from './ui/HelpIcon'
 import ErrorMessage from './ui/ErrorMessage'
@@ -48,7 +48,8 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
       useJson,
       textarea,
       sentimentWeight,
-      days
+      days,
+      exportJSON
     } = values;
     let stop = false;
     let data;
@@ -77,7 +78,9 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
     if (!hasExpectedFields(indexCalculator)) throw new Error(ERROR_MESSAGES.NOTENOUGHDATA);
     const newStoreData = convertToStoreData(indexCalculator);
     if (newStoreData && setStore) {
+      if (exportJSON) copyToClipboard(JSON.stringify(indexCalculator.dataSet), "Copied underlying data to the clipboard");
       setStore(newStoreData);
+      console.debug({ indexCalculator });
       router.push('/dashboard');
     };
   } catch (err) {
@@ -103,7 +106,6 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
     portfolio: [{
       name: 'ETH',
       coingeckoId: 'ethereum',
-      // RATIO: '0.3'
     }], 
     computeWeights: true,
     sentimentScore: false,
@@ -148,7 +150,8 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
             : <>
                 <FieldArray name="portfolio">
                   {({ fields }) => fields.map((name, index) => (
-                    <div className="flex space-x-3 items-end mb-4" key={name}>
+                    <div className="flex flex-grow justify-between flex-wrap items-end mb-4" key={name}>
+                      <span className="flex space-x-3 justify-start">
                       <div className="form-control">
                         <Field
                           className="input input-primary input-bordered"
@@ -191,6 +194,8 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                             />
                         </div>
                         : ''}
+                      </span>
+                      <span className="flex flex-end">
                       <button
                         type="button"
                         onClick={() => fields.remove(index)}
@@ -210,18 +215,32 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                           ></path>
                         </svg>
                       </button>
+                      </span>
                     </div>
                   ))}
                 </FieldArray>
                 <div className="justify-start space-x-2 my-1 card-actions">
-                  <button className="btn btn-primary" type="button" onClick={() => {
+                  <button className="btn btn-primary " type="button" onClick={() => {
                     push('portfolio', undefined)}
                   }>
                     Add Coin Manually
                   </button>
+                  <div className="form-control items-center flex-row">
+                  <Field
+                    className="checkbox my-3 mr-1"
+                    name="useJson"
+                    component="input"
+                    type="checkbox"
+                    placeholder=""
+                    id="useJson" />
+                  <label htmlFor="sentimentScore" className="label">
+                    <span className="label-text">Advanced Editor</span>
+                  </label>
+                </div>                  
                 </div>
               </>
               }
+              <div className="divider"/>
               <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1"
@@ -271,15 +290,18 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                 <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1"
-                    name="useJson"
+                    name="exportJSON"
                     component="input"
                     type="checkbox"
                     placeholder=""
-                    id="useJson" />
-                  <label htmlFor="sentimentScore" className="label">
-                    <span className="label-text">Load from JSON</span>
+                    id="exportJSON" />
+                  <label htmlFor="exportJSON" className="label">
+                    <span className="label-text">Copy data on Submit</span>
+                    <div className="tooltip tooltip-top" data-tip={TOOLTIPS.EXPORTJSON}>
+                      <HelpIcon className="ml-2"/>
+                    </div>                          
                   </label>
-                </div>
+                </div>                 
                 {values && values.computeWeights ? <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1 w-10 text-center text-black"
@@ -305,21 +327,35 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                     placeholder="30"
                     id="days" 
                     />
-                  <label htmlFor="maxWeight" className="label">
+                  <label htmlFor="days" className="label">
                     <span className="label-text">Number of Days</span>
                     <div className="tooltip tooltip-top" data-tip={TOOLTIPS.DAYS}>
                       <HelpIcon className="ml-2"/>
                     </div>                          
                   </label>
-                </div>                
-                {hasErrors && <ErrorMessage error={`Error in field ${getFirstError(errors)}`}/>}
+                </div>                               
+                  {
+                    hasErrors && <ErrorMessage
+                      error={`Error in field ${getFirstError(errors)}`}
+                    />
+                  }
+              <div className="divider"/>
                 <div className="card-actions justify-between">
                   <SaveJSONButton data={form.getState().values} />
                   <div className="justify-end space-x-2">
-                  <button className={`btn btn-primary ${submitting && 'loading'}`} type="submit" disabled={!valid || submitting}>
+                  <button
+                    className={`btn btn-primary ${submitting && 'loading'}`}
+                    type="submit"
+                    disabled={!valid || submitting}
+                  >
                     Submit
                   </button>
-                  <button className={`btn btn-primary ${submitting && 'loading'}`} type="button" onClick={form.reset} disabled={submitting || pristine}>
+                  <button
+                    className={`btn btn-primary ${submitting && 'loading'}`}
+                    type="button"
+                    onClick={form.reset}
+                    disabled={submitting || pristine}
+                  >
                     Reset
                   </button>
                 </div>

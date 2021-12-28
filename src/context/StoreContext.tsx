@@ -5,7 +5,7 @@ import { getBarData } from "../utils/bar";
 import { getKpis } from "../utils/table";
 import { getPieData, getMctrData } from "../utils/pie";
 import { getHeatMapData, getHeatmapKeys } from "../utils/heatmap";
-import { addPerformanceToLineData, getLineData, performanceGetter, priceGetter, returnGetter } from "../utils/line";
+import { addPerformanceToLineData, addBacktestingPerformanceToLineData, getLineData, performanceGetter, priceGetter, returnGetter } from "../utils/line";
 import { ReducedIndexCalculator } from "../types/indexCalculator";
 import { getHeadlines } from "@/utils/headlines";
 
@@ -20,7 +20,7 @@ export const convertToStoreData = (
 ): Store => ({
   lines: {
     performance: addPerformanceToLineData(getLineData(indexCalculator.dataSet, performanceGetter), indexCalculator.performance),
-    returns: getLineData(indexCalculator.dataSet, returnGetter),
+    returns: addBacktestingPerformanceToLineData(getLineData(indexCalculator.dataSet, returnGetter), indexCalculator.backtesting),
     price: getLineData(indexCalculator.dataSet, priceGetter),
   },
   heatmaps: {

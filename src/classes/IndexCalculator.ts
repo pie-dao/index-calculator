@@ -37,6 +37,7 @@ const multiplyMatricies = (a: Matrix, b: Matrix) => {
 export class IndexCalculator {
   public dataSet: IndexCalculatorOutput[];
   public performance: Array<[number, number]>
+  public backtesting: Array<[number, number]>
   public name: string
   public SHARPERATIO: number
   public cumulativeUnderlyingMCAP: number
@@ -58,6 +59,7 @@ export class IndexCalculator {
      */
     this.days = days
     this.dataSet = []
+    this.backtesting = []
     this.maxWeight = parseFloat(maxweight)
     this.name = name
     this.SHARPERATIO = 0
@@ -292,9 +294,21 @@ export class IndexCalculator {
     })
   }
 
+  computePortfolioBacktesting() {
+    const exp = this.nav.map(([date, price], i) => {
+      if (i === 0) {
+        return [i, 0]
+      } else {
+        let prePrice = this.nav[i - 1][1];
+        return [i, Math.log(price / prePrice)]
+      }
+    });
+    this.backtesting = exp as [number, number][];
+  }
+
   computeBacktesting() {
     /**
-     * Backtesting is the same as performance but backwards looking
+     * Backtesting is day to day performance, not aggregated
      */
     this.dataSet.forEach((el) => {
       // o[0] Timestamp
@@ -484,6 +498,7 @@ export class IndexCalculator {
     this.computePerformance()
     this.computeTokenNumbers()
     this.computeSharpeRatio()
+    this.computePortfolioBacktesting()
   }
 
   computeInitialTokenAmounts() {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { PropsWithChildren } from 'react-transition-group/node_modules/@types/react';
 
 export const copyToClipboard = (data: string, message: string) => {
   const el = document.createElement('textarea');
@@ -26,7 +27,7 @@ const SaveJSONButton = (props: { data: { portfolio: Array<any> } }): JSX.Element
       alert('Nothing to Copy')
     } else {
       const portfolio = JSON.stringify(props.data.portfolio);
-      copyToClipboard(portfolio, 'copied JSON to clipboard');
+      copyToClipboard(portfolio, 'Saved Index to local storage, you can retrieve it by hitting "load saved index"');
       localStorage.setItem('latest', portfolio);
     }
   }
@@ -35,18 +36,33 @@ const SaveJSONButton = (props: { data: { portfolio: Array<any> } }): JSX.Element
       <button
         type="button"
         className="btn btn-primary" 
-        onClick={click}>Export to JSON
+        onClick={click}>Save Index
       </button>
       {
         <button
           type="button"
           className="btn btn-ghost"
           disabled={!latest} 
-          onClick={fromLocal}>Load Most Recent Index
+          onClick={fromLocal}>Load Saved Index
         </button>
       }
     </>
   )
 }
 
+export const CopyChartJSON = (props: { data: unknown[] }): JSX.Element => {
+  const click = () => {
+    const data = JSON.stringify(props.data);
+    copyToClipboard(data, 'Exported JSON to clipboard');
+  }
+  return (
+      <button
+        type="button"
+        className="btn btn-primary btn-xs absolute max-w-1/2 right-5" 
+        onClick={click}>Export
+      </button>
+    )
+}
+
 export default SaveJSONButton;
+

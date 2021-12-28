@@ -1,6 +1,6 @@
 import { Datum, Serie } from "@nivo/line";
 import { colorSchemeIndex } from "./theme";
-import { IndexCalculatorOutput } from "../types/indexCalculator";
+import { Backtesting, IndexCalculatorOutput } from "../types/indexCalculator";
 import { Performance, SerieGetter } from "../types/store";
 
 const monthDayTime = (d: Date): string => {
@@ -24,10 +24,7 @@ todayStart.setSeconds(0);
 todayStart.setMilliseconds(0);
 
 // Get coin performance
-export const performanceGetter: SerieGetter = item => item.performance
-  // .filter(a => a[0] <= todayStart.getTime())
-  // .sort((a, b) => a[0] - b[0])
-  .map(i => toSerie(i as [number, number]));
+export const performanceGetter: SerieGetter = item => item.performance.map(i => toSerie(i as [number, number]));
 
 // Get backtesting returnd
 export const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({
@@ -53,6 +50,20 @@ export const getLineData = (data: IndexCalculatorOutput[], getter: SerieGetter):
   }))
 };
 
+export const addBacktestingPerformanceToLineData = (data: Serie[], backtesting: [number, number][]): Serie[] => {
+  /**
+   * @param data is the existing line data
+   * @param performance is the overall portfolio performance
+   * Merges into a single object for performance charts
+   */
+  const total: Serie = {
+    id: 'OVERALL',
+    color: 'green',
+    data: backtesting.map(i => ({ x: i[0], y: i[1] }))
+  };
+  return [...data, total];
+}
+
 export const addPerformanceToLineData = (data: Serie[], performance: Performance): Serie[] => {
   /**
    * @param data is the existing line data
@@ -62,10 +73,7 @@ export const addPerformanceToLineData = (data: Serie[], performance: Performance
   const total: Serie = {
     id: 'OVERALL',
     color: 'green',
-    data: performance
-      // .filter(a => a[0] <= todayStart.getTime())
-      // .sort((a, b) => a[0] - b[0])
-      .map(i => toSerie(i as [number, number]))
+    data: performance.map(i => toSerie(i as [number, number]))
   };
   return [...data, total];
 }

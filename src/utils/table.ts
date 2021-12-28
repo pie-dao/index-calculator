@@ -22,12 +22,36 @@ const formatter =  new Intl.NumberFormat(
   }
 );
 
+
 export const getKpis = (data: IndexCalculatorOutput[]): KPIs[] => data.map(item => {
   /**
    * Removes the nested objects from the data set and returns only the KPIs
    * after adjusting the precision as needed.
    */
-  const { backtesting, data, performance, ...kpis } = item;
+  let kpis = {} as KPIs;
+  const row: KPIs = {
+    name: item.name,
+    coingeckoId: item.coingeckoId,
+    MIN_MCAP: item.MIN_MCAP,
+    MAX_MCAP: item.MAX_MCAP,
+    AVG_MCAP: item.AVG_MCAP,
+    initialAmounts: item.initialAmounts,
+    tokenBalance: item.tokenBalance,
+    lastPrice: item.lastPrice,
+    RATIO: item.RATIO,
+    leftover: item.leftover ?? 0,
+    MCTR: item.MCTR
+  }
+
+  if (item.sentimentScore) {
+    kpis = {
+      ...row,
+      sentimentRATIO: item.sentimentRATIO ?? 0,
+      sentimentScore: item.sentimentScore ?? 0,
+    }
+  } else {
+    kpis = row;
+  }
   return adjustKPIPrecision(kpis)
 });
 

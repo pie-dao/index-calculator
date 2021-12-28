@@ -2,7 +2,8 @@ export const TOOLTIPS = {
   COMPUTE_WEIGHTS: 'If selected, will automatically compute the weighting of the coin in the portfolio, based on its relative value',
   SENTIMENT_SCORE: 'Select to add a PieDAO Sentiment Score to the Index',
   MAX_WEIGHTS: 'Computed weights are selected based on market caps, if you want to limit the maximum percentage of the coin in the portfolio, set this value to a percentage',
-  DAYS: 'Number of days of data to fetch from the API'
+  DAYS: 'Number of days of data to fetch from the API',
+  EXPORTJSON: 'Select this and a copy of the underlying data will be saved to your clipboard on submit'
 }
 
 export const ERROR_MESSAGES = {
