@@ -15,7 +15,7 @@ export const PieToolTip = (props: PieTooltipProps<PieData>): JSX.Element => (
                 borderRadius: '100%'
             }}></div>
             <div style={{ color: 'black' }}>
-              { props.datum.label } : { props.datum.value * 100 } %
+              { props.datum.label } : { props.datum.value }
             </div>
         </div>
     </Tooltip>

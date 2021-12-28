@@ -5,18 +5,19 @@ import Select, { components, InputProps, MultiValue, SingleValue } from 'react-s
 import Fuse from 'fuse.js';
 import { useState, useRef } from 'react';
 
-export type Option = { label: string, value: string };
+export type Option = { label: string, value: string, symbol: string };
 
 const fetcher = (...args: [any]) => fetch(...args).then(res => res.json());
 
 const getOptions = (data: Coin[], query: string): Option[] => {
   const fuse = new Fuse(data, {
-    keys: ['name', 'value'],
+    keys: ['name', 'value', 'symbol'],
     threshold: 0.6
   });
+  
   return fuse
     .search(query)
-    .map(({ item }) => ({ value: item.id, label: item.name })) 
+    .map(({ item }) => ({ value: item.id, label: `${item.name} (${item.symbol.toUpperCase()})`, symbol: item.symbol.toUpperCase() })) 
 };
 
 const Input = (props: any) => <components.Input {...props} isHidden={false} />;
@@ -39,7 +40,7 @@ export const SelectSearch = (props: {
   
     const onChange = (option: Option | any) => {
       if (option) {
-        setValue(option);
+        setValue({ ...option, label: option.symbol });
         props.setSubmit(props.submit + 1);
       }
       setInputValue(option ? option.label : "");

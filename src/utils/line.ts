@@ -7,17 +7,27 @@ const monthDayTime = (d: Date): string => {
   const [date, time] = d.toISOString().split('T');
   const datePart = date.slice(5, 10);
   const timePart = time.slice(0, 5);
-  return `${datePart} ${timePart}`
+  // return `${datePart} ${timePart}`
+  return datePart
 }
 
 // Pretty formats the date and maps to x, y coordinates
 export const toSerie = (i: [number, number]): Datum => ({
-  x: monthDayTime(new Date(i[0])),
+  x: new Date(i[0]),
   y: i[1]
 })
 
+const todayStart = new Date();
+todayStart.setHours(0);
+todayStart.setMinutes(0);
+todayStart.setSeconds(0);
+todayStart.setMilliseconds(0);
+
 // Get coin performance
-export const performanceGetter: SerieGetter = item => item.performance.map(i => toSerie(i as [number, number]));
+export const performanceGetter: SerieGetter = item => item.performance
+  // .filter(a => a[0] <= todayStart.getTime())
+  // .sort((a, b) => a[0] - b[0])
+  .map(i => toSerie(i as [number, number]));
 
 // Get backtesting returnd
 export const returnGetter: SerieGetter = item => item.backtesting.returns.map((r, index) => ({
@@ -52,7 +62,10 @@ export const addPerformanceToLineData = (data: Serie[], performance: Performance
   const total: Serie = {
     id: 'OVERALL',
     color: 'green',
-    data: performance.map(i => toSerie(i))
+    data: performance
+      // .filter(a => a[0] <= todayStart.getTime())
+      // .sort((a, b) => a[0] - b[0])
+      .map(i => toSerie(i as [number, number]))
   };
   return [...data, total];
 }

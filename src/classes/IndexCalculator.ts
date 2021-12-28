@@ -2,7 +2,6 @@ import * as _ from 'lodash'
 import jStat from 'jstat';
 import BigNumber from 'bignumber.js'
 import { Backtesting, IndexCalculatorOutput } from '@/types/indexCalculator'
-import { camelCase } from 'lodash';
 
 BigNumber.set({ DECIMAL_PLACES: 10, ROUNDING_MODE: 4 })
 
@@ -31,8 +30,8 @@ const getDot = (arrA: Matrix, arrB: Matrix, row: number, col: number) => {
 }
 
 const multiplyMatricies = (a: Matrix, b: Matrix) => {
-  let matrixShape = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0))
-  return matrixShape.map((row, i) => row.map((val, j) => getDot(a, b, i, j)))
+  let matrixShape = new Array(a.length).fill(0).map(() => new Array(b[0].length).fill(0));
+  return matrixShape.map((row, i) => row.map((_, j) => getDot(a, b, i, j)));
 }
 
 export class IndexCalculator {
@@ -49,9 +48,15 @@ export class IndexCalculator {
   private marketWeightInfluence: number
   public leftover: number
   public nav: Array<number[]>
+  public days: number;
   underlyingAmounts: Array<number[]>
 
-  constructor(name: string, maxweight = '1', sentimentWeight = '0.0') {
+  constructor(name: string, maxweight = '1', sentimentWeight = '0.0', days = 30) {
+    /**
+     * @dev: initial weight is set to zero, so the weight is entirely set by MCAP until we change
+     * 
+     */
+    this.days = days
     this.dataSet = []
     this.maxWeight = parseFloat(maxweight)
     this.name = name
@@ -70,7 +75,7 @@ export class IndexCalculator {
 
   async fetchCoinData(id: string): Promise<IndexCalculatorOutput['data']> {
     let res = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${id}/market_chart?days=30&vs_currency=usd&interval=daily`
+      `https://api.coingecko.com/api/v3/coins/${id}/market_chart?days=${this.days}&vs_currency=usd&interval=daily`
     );
     return await res.json();
   }
@@ -87,6 +92,26 @@ export class IndexCalculator {
       }
       this.dataSet.push(coin);
     }
+    this.truncateResponse();
+  }
+
+  truncateResponse () {
+    /**
+     * In situations where the API does not have equal lengths of data
+     * We cannot compute covariance. It's therefore helpful to truncate the arrays
+     * To be of the same length
+     */
+    const smallestResponse = this.dataSet.reduce((prev, curr) => {
+      return curr.data.prices.length < prev ? curr.data.prices.length : prev;
+    }, this.days);
+    this.dataSet.forEach(d => {
+      const dataLength = d.data.market_caps.length;
+      if (dataLength > smallestResponse) {
+        d.data.market_caps.splice(0, dataLength-smallestResponse)
+        d.data.total_volumes.splice(0, dataLength-smallestResponse)
+        d.data.prices.splice(0, dataLength-smallestResponse)  
+      }
+    });
   }
 
   computeMCAP() {
@@ -102,8 +127,7 @@ export class IndexCalculator {
         el.AVG_MCAP = marketCap.reduce((a: number, b: number) => a + b, 0) / marketCap.length
       }
     });
-
-    this.cumulativeUnderlyingMCAP = this.dataSet.reduce((a, b) => a + b.AVG_MCAP, 0)
+    this.cumulativeUnderlyingMCAP = this.dataSet.reduce((a, b) => a + b.AVG_MCAP, 0);
   }
 
   computeWeights() {
@@ -297,6 +321,7 @@ export class IndexCalculator {
       for (let k = 0; k < this.dataSet.length; k++) {
         const next = this.dataSet[k]
         if ('returns' in current.backtesting && 'returns' in next.backtesting) {
+          if (current.backtesting.returns.length !== next.backtesting.returns.length) alert('mismatched lengths');
           let correlation = jStat.corrcoeff(current.backtesting.returns, next.backtesting.returns)
           _.set(current.backtesting, `correlation.${next.name}`, correlation)
         }
@@ -323,7 +348,6 @@ export class IndexCalculator {
               current.backtesting.returns, next.backtesting.returns
             ) 
             * current.backtesting.returns.length;
-
           _.set(current.backtesting, `covariance.${next.name}`, covariance);
           arr.push(covariance);
         }
@@ -334,7 +358,6 @@ export class IndexCalculator {
     // Needs documentation, ask Gab
     let weightsArray = this.dataSet.map((el) => el.RATIO)
     weightsArray.forEach((el) => matrixC.push([el]))
-
     let product = multiplyMatricies([weightsArray], matrixB)
     const pieVariance = multiplyMatricies(product, matrixC)[0][0]
 

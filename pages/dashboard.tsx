@@ -1,10 +1,9 @@
 import React from 'react'
 import HeatMap from '../src/components/dashboard/charts/HeatMap'
-import LineChart from '../src/components/dashboard/charts/LineChart'
+import { LineChart, TimeSeriesLineChart } from '../src/components/dashboard/charts/LineChart'
 import PieChart from '../src/components/dashboard/charts/PieChart'
 import Panel from '../src/components/ui/Panel'
 import { StoreContext } from '../src/context/StoreContext'
-import BarChart from '../src/components/dashboard/charts/BarChart'
 import KPITable from '../src/components/dashboard/charts/KPITable'
 import TitleCard from '../src/components/ui/TitleCard'
 import { StoreContextProps } from '../src/context/StoreContext'
@@ -17,7 +16,7 @@ function Dashboard() {
       <TitleCard />
       <HeadlineStats data={store.tables.headlines} />
       <Panel size="h-1/2 m-2 overflow-x-auto" title="Performance Line Chart">
-          <LineChart data={store.lines.performance} index='% Change'/>
+          <TimeSeriesLineChart data={store.lines.performance} index='% Change'/>
       </Panel>      
       <Panel size="h-1/2 m-2 overflow-x-auto" title="Backtesting Returns Line Chart">
           <LineChart data={store.lines.returns} index='% Change' />

@@ -4,20 +4,39 @@ import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
 import { IndexCalculator } from '../classes/IndexCalculator'
 import { convertToStoreData, StoreContext } from '../context/StoreContext'
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { NextRouter, useRouter } from 'next/router'
 import { Option } from './ui/SelectSearch'
 import { Store } from '@/types/store'
 import SaveJSONButton from './ui/SaveJSON'
+import { ERROR_MESSAGES, TOOLTIPS } from '@/utils/constants'
+import { HelpIcon } from './ui/HelpIcon'
+import ErrorMessage from './ui/ErrorMessage'
+import { FormApi, ValidationErrors } from 'final-form'
 
 const hasExpectedFields = (index: IndexCalculator): boolean => {
   return Boolean(index.SHARPERATIO && index.STDEV && index.VARIANCE);
 }
 
-const ERROR_MESSAGES = {
-  INVALIDJSON: 'Json is not valid, use a validator',
-  INCORRECTCOINID: 'One or more of the Coingecko IDs was not recognised, try again. The [Coin ID] can be found in the coingecko url: https://www.coingecko.com/en/coins/[Coin ID], or by using the search bar',
-  NOTENOUGHDATA: 'Some of the Coins listed do not have enough data to compute performance metrics, please try another coin.',
+const stripJSON = (str: string) => str
+  .replaceAll("{", '')
+  .replaceAll("}", '')
+  .replaceAll("[", '')
+  .replaceAll("]", '')
+  .replaceAll(":", ' : ')
+  .replaceAll('","', '" : "')
+
+const getFirstError = (errors: ValidationErrors): string => {
+  let errObj: unknown;
+  if (errors && errors.portfolio) {
+    errObj = errors.portfolio.find((p: unknown) => p);
+  } else if (errors) {
+    errObj = Object.entries(errors).find((e: unknown) => e);
+  } else {
+    errObj = { error: "Unknown Error" }
+  }
+  console.debug(errObj, errors)
+  return stripJSON(JSON.stringify(errObj));
 }
 
 const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Store) => void) => {
@@ -29,7 +48,8 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
       sentimentScore,
       useJson,
       textarea,
-      sentimentWeight
+      sentimentWeight,
+      days
     } = values;
     let stop = false;
     let data;
@@ -40,17 +60,21 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
       alert(ERROR_MESSAGES.INVALIDJSON)
     }
     if(stop) return;
-    const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0')
+    const indexCalculator = new IndexCalculator(data, maxWeight ? maxWeight : '1', sentimentScore ? sentimentWeight : '0.0', days ? days : 30)
     try {
       await indexCalculator.pullData(data)
     } catch {
       throw new Error(ERROR_MESSAGES.INCORRECTCOINID)
     }
-    indexCalculator.computeAll({
-      adjustedWeight: computeWeights,
-      sentimentWeight: sentimentScore,
-      computeWeights: computeWeights,
-    });
+    try {
+      indexCalculator.computeAll({
+        adjustedWeight: computeWeights,
+        sentimentWeight: sentimentScore,
+        computeWeights: computeWeights,
+      });
+    } catch {
+      throw new Error(ERROR_MESSAGES.CALCULATIONISSUE)
+    }
     if (!hasExpectedFields(indexCalculator)) throw new Error(ERROR_MESSAGES.NOTENOUGHDATA);
     const newStoreData = convertToStoreData(indexCalculator);
     if (newStoreData && setStore) {
@@ -60,17 +84,29 @@ const onSubmit = async (values: any, router: NextRouter, setStore?: (store: Stor
   } catch (err) {
     console.warn(err);
     alert(err)
-  }
+  } 
 }
 
 export default function IndexForm(props: { coin: Option, submit: number }) {
+  const formRef: React.MutableRefObject<FormApi> = useRef({} as FormApi);
+
+  useEffect(() => {
+    const { label, value } = props.coin;
+    if (label && value) {
+      formRef.current.mutators.push('portfolio', {
+        name: props.coin.label,
+        coingeckoId: props.coin.value
+      });  
+    };
+  }, [props.coin, props.submit]);
+
   const initialFormState = {
     portfolio: [{
-      name: 'Ethereum',
+      name: 'ETH',
       coingeckoId: 'ethereum',
-      RATIO: '0.3'
+      // RATIO: '0.3'
     }], 
-    computeWeights: false,
+    computeWeights: true,
     sentimentScore: false,
     useJson: false
   }
@@ -94,17 +130,10 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
         submitting,
         values,
       }) => {
-
-        useEffect(() => {
-          const { label, value } = props.coin;
-          if (label && value) {
-            push('portfolio', {
-              name: props.coin.label,
-              coingeckoId: props.coin.value
-            });  
-          };
-        }, [props.coin, props.submit]);
-      
+        formRef.current = form;
+        const valid = form.getState().valid && form.getState().values.portfolio.length > 0;
+        const errors = form.getState().errors;
+        const hasErrors = errors && Object.entries(errors).length > 0;      
         return (
           <form onSubmit={handleSubmit}>
             { values && values.useJson ?
@@ -126,7 +155,9 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                           className="input input-primary input-bordered"
                           name={`${name}.name`}
                           component="input"
-                          placeholder="Name" />
+                          placeholder="Name"
+                          validate={v => v ? undefined : 'Missing Input'}
+                          />
                       </div>
                       <div className="form-control">
                         <Field
@@ -134,6 +165,7 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                           name={`${name}.coingeckoId`}
                           placeholder="Coingecko ID"
                           component="input"
+                          validate={v => v ? undefined : 'Missing Input'}
                           />
                       </div>
                       {values && values.computeWeights === false ?
@@ -144,7 +176,8 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                             component="input"
                             placeholder="Ratio"
                             type="number"
-                            validate={values.computesWeights} />
+                            validate={v => (v <= 1 && v > 0) ? undefined : 'Must be between 0 and 1'}
+                            />
                         </div>
                         : ''}
                       {values && values.sentimentScore ?
@@ -154,7 +187,9 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                             name={`${name}.sentimentScore`}
                             component="input"
                             placeholder="Score"
-                            type="number" />
+                            type="number"
+                            validate={v => (v <= 12 && v > 0) ? undefined : 'Sentiment score is from 1 to 12'}
+                            />
                         </div>
                         : ''}
                       <button
@@ -198,6 +233,9 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                     id="computeWeights" />
                   <label htmlFor="computeWeights" className="label">
                     <span className="label-text">Compute Weights Automatically</span>
+                    <div className="tooltip tooltip-top" data-tip={TOOLTIPS.COMPUTE_WEIGHTS}>
+                      <HelpIcon className="ml-2"/>
+                    </div>
                   </label>
                 </div>
                 <div className="form-control items-center flex-row">
@@ -207,19 +245,25 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                     component="input"
                     type="checkbox"
                     placeholder="Ratio"
-                    id="sentimentScore" />
+                    id="sentimentScore"
+                    />
                   <label htmlFor="sentimentScore" className="label">
                     <span className="label-text">Use Sentiment Score</span>
+                    <div className="tooltip tooltip-top" data-tip={TOOLTIPS.SENTIMENT_SCORE}>
+                      <HelpIcon className="ml-2"/>
+                    </div>
                   </label>
                 </div>
                 { values && values.sentimentScore ? 
                 <div className="form-control items-center flex-row">
                   <Field
-                    className="checkbox my-3 mr-1"
+                    className="checkbox my-3 mr-1 w-7 text-center text-black"
                     name="sentimentWeight"
                     component="input"
                     placeholder="1"
-                    id="sentimentWeight" />
+                    id="sentimentWeight"
+                    validate={v => (v <= 1 && v > 0) ? undefined : 'Must be between 0 and 1'}
+                    />
                   <label htmlFor="sentimentWeight" className="label">
                     <span className="label-text">Sentiment Weights</span>
                   </label>
@@ -234,32 +278,53 @@ export default function IndexForm(props: { coin: Option, submit: number }) {
                     placeholder=""
                     id="useJson" />
                   <label htmlFor="sentimentScore" className="label">
-                    <span className="label-text">Use Json</span>
+                    <span className="label-text">Load from JSON</span>
                   </label>
                 </div>
-                <div className="form-control items-center flex-row">
+                {values && values.computeWeights ? <div className="form-control items-center flex-row">
                   <Field
                     className="checkbox my-3 mr-1 w-10 text-center text-black"
                     name="maxWeight"
                     component="input"
                     placeholder="1"
-                    id="maxWeight" />
+                    id="maxWeight"
+                    validate={v => v ? (v <= 1 && v > 0) ? undefined : 'Must be between 0 and 1' : undefined }
+                    />
                   <label htmlFor="maxWeight" className="label">
                     <span className="label-text">Max Weights</span>
+                    <div className="tooltip tooltip-top" data-tip={TOOLTIPS.MAX_WEIGHTS}>
+                      <HelpIcon className="ml-2"/>
+                    </div>                    
                   </label>
                 </div>
+                : '' }
+                <div className="form-control items-center flex-row">
+                  <Field
+                    className="checkbox my-3 mr-1 w-10 text-center text-black"
+                    name="days"
+                    component="input"
+                    placeholder="30"
+                    id="days" 
+                    />
+                  <label htmlFor="maxWeight" className="label">
+                    <span className="label-text">Number of Days</span>
+                    <div className="tooltip tooltip-top" data-tip={TOOLTIPS.DAYS}>
+                      <HelpIcon className="ml-2"/>
+                    </div>                          
+                  </label>
+                </div>                
+                {hasErrors && <ErrorMessage error={`Error in field ${getFirstError(errors)}`}/>}
                 <div className="card-actions justify-between">
                   <SaveJSONButton data={form.getState().values} />
                   <div className="justify-end space-x-2">
-                  <button className="btn btn-primary" type="submit" disabled={submitting || pristine}>
+                  <button className={`btn btn-primary ${submitting && 'loading'}`} type="submit" disabled={!valid || submitting}>
                     Submit
                   </button>
-                  <button className="btn btn-primary" type="button" onClick={form.reset} disabled={submitting || pristine}>
+                  <button className={`btn btn-primary ${submitting && 'loading'}`} type="button" onClick={form.reset} disabled={submitting || pristine}>
                     Reset
                   </button>
                 </div>
-
-                </div>
+              </div>
           </form>
         )
       }}
