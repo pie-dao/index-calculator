@@ -35,7 +35,6 @@ const getFirstError = (errors: ValidationErrors): string => {
   } else {
     errObj = { error: "Unknown Error" }
   }
-  console.debug(errObj, errors)
   return stripJSON(JSON.stringify(errObj));
 }
 

@@ -49,35 +49,11 @@ function Dashboard() {
               index={store.heatmaps.correlation.index}
             />
           </div>
-          <div className="w-1/3 m-3 h-96 flex flex-col" style={{ minWidth: '400px' }}>
-            <h3 className="ml-2 w-full mb-3">Covariance:</h3>
-            <HeatMap
-              data={store.heatmaps.covariance.data}
-              keys={store.heatmaps.covariance.keys}
-              index={store.heatmaps.covariance.index}
-            />
-          </div>
         </div>
       </div>
       <div className="card bordered m-2 p-2">
         <KPITable data={store.tables.kpi} />
       </div>      
-      {/* <div className="card bordered m-2">
-        <div className="card-body h-full flex flex-col">
-          <div className="card title w-full">
-            <h1>Summary Bar Charts</h1>
-          </div>
-          <div className="flex flex-row flex-wrap h-full justify-center items-center">
-          {
-            Object.entries(store.bars).map(([kpi, data]) => (
-              <div key={kpi} className="h-96 max-w-1/2" style={{ minWidth: '500px' }}>
-                <BarChart data={data.data} keys={data.keys} index={data.index} />
-              </div>
-            ))
-          }
-          </div>
-        </div>
-      </div> */}
     </div>
   )
 }

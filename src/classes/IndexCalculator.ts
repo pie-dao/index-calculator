@@ -92,26 +92,36 @@ export class IndexCalculator {
       }
       this.dataSet.push(coin);
     }
-    this.truncateResponse();
+    this.attemptTrim();
   }
 
-  truncateResponse () {
+  attemptTrim () {
     /**
      * In situations where the API does not have equal lengths of data
      * We cannot compute covariance. It's therefore helpful to truncate the arrays
      * To be of the same length
      */
+    let _confirm = true;
     const smallestResponse = this.dataSet.reduce((prev, curr) => {
       return curr.data.prices.length < prev ? curr.data.prices.length : prev;
     }, this.days);
-    this.dataSet.forEach(d => {
-      const dataLength = d.data.market_caps.length;
-      if (dataLength > smallestResponse) {
-        d.data.market_caps.splice(0, dataLength-smallestResponse)
-        d.data.total_volumes.splice(0, dataLength-smallestResponse)
-        d.data.prices.splice(0, dataLength-smallestResponse)  
-      }
-    });
+
+    if (smallestResponse < this.days) {
+      _confirm = confirm(`
+        Some of the coins fetched from the API are returning less data than expected. This may cause problems when calculating performance and risk metrics.
+        It is possible to trim the data to ensure all datasets are the same length, would you like to proceed?`
+      )
+    }
+    if (_confirm) {
+      this.dataSet.forEach(d => {
+        const dataLength = d.data.market_caps.length;
+        if (dataLength > smallestResponse) {
+          d.data.market_caps.splice(0, dataLength-smallestResponse)
+          d.data.total_volumes.splice(0, dataLength-smallestResponse)
+          d.data.prices.splice(0, dataLength-smallestResponse)  
+        }
+      });
+    }
   }
 
   computeMCAP() {
@@ -230,7 +240,7 @@ export class IndexCalculator {
      * @Dev Not sure if this does anything?
      */
     let total = this.dataSet.reduce((a, v) => a + v.RATIO, 0)
-    console.log(`\nTotal: ${round(total)}\n`)
+    // console.log(`\nTotal: ${round(total)}\n`)
     return total
   }
 
