@@ -23,7 +23,7 @@ export default function Home() {
           <HelpIcon className="absolute top-5 right-5" height="25" width="25"/>
         </a>
           <div className="card-body p-5 sm:p-10">
-            <h2 className="mt-4 mb-2 text-4xl font-bold card-title ">Tiramisu</h2>
+            <h2 className="mt-4 mb-2 text-4xl font-bold card-title">Tiramisu</h2>
             <h2 className="my-5 text-3xl font-bold card-subtitle">PieDAO Index Calculator</h2>
             <span className="flex justify-center">
             <p className="mb-2 card-subtitle" style={{ maxWidth: '500px', textAlign: 'center' }}>
